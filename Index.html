@@ -3,45 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE V32 | OMNIVERSE OS</title>
+    <title>GLIMPSE V33 | FINAL FIX</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --neon: #00f2ea; --magenta: #ff00ff; --gold: #ffd700; --glass: rgba(255,255,255,0.1); }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; font-family: 'Inter', sans-serif; color: white; overflow: hidden; }
+        :root { --neon: #00f2ea; --magenta: #ff00ff; --gold: #ffd700; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body, html { height: 100%; background: #000; font-family: sans-serif; color: white; overflow: hidden; }
 
-        /* --- BACKGROUND ENGINE --- */
-        #v-live { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); filter: brightness(0.7); }
-        #main-feed { position: relative; z-index: 5; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; display: none; }
-        .v-card { height: 100vh; width: 100vw; scroll-snap-align: start; position: relative; display: flex; align-items: center; justify-content: center; }
-        .v-card video { width: 100%; height: 100%; object-fit: cover; }
+        /* --- BACKGROUND --- */
+        #v-live { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); background: #111; }
 
-        /* --- GATE (START) --- */
-        #gate { position: fixed; inset: 0; background: #000; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .gate-btn { padding: 25px 60px; border-radius: 50px; border: 2px solid var(--neon); background: transparent; color: var(--neon); font-weight: 900; letter-spacing: 5px; box-shadow: 0 0 20px var(--neon); }
+        /* --- START SCREEN --- */
+        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+        .gate-btn { padding: 20px 40px; border-radius: 40px; border: 2px solid var(--neon); background: transparent; color: var(--neon); font-weight: 900; font-size: 18px; margin-top: 30px; box-shadow: 0 0 15px var(--neon); }
 
-        /* --- PINNED COMMENT --- */
-        #pinned-area { position: fixed; top: 100px; left: 5%; width: 90%; z-index: 8000; display: none; animation: slideDown 0.4s; }
-        .pin-box { background: rgba(0,242,234,0.15); backdrop-filter: blur(25px); border: 2px solid var(--neon); padding: 15px; border-radius: 20px; position: relative; }
-        .pin-label { position: absolute; top: -10px; right: 20px; background: var(--neon); color: #000; font-size: 10px; font-weight: 900; padding: 2px 10px; border-radius: 5px; }
-
-        /* --- MESSENGER --- */
-        #messenger { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(40px); z-index: 9000; display: none; padding: 60px 20px; }
-        .msg-bubble { max-width: 80%; padding: 12px; border-radius: 15px; margin-bottom: 10px; font-size: 14px; }
-        .bubble-me { align-self: flex-end; background: var(--neon); color: #000; margin-left: auto; }
-        .bubble-them { background: var(--glass); border: 1px solid #333; }
-
-        /* --- SIDEBAR & UI --- */
-        .sidebar { position: absolute; right: 15px; bottom: 140px; display: flex; flex-direction: column; gap: 20px; z-index: 7000; }
-        .s-tool { width: 55px; height: 55px; background: var(--glass); backdrop-filter: blur(20px); border-radius: 18px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); font-size: 24px; }
+        /* --- UI LAYER --- */
+        #app { display: none; position: relative; z-index: 100; height: 100%; }
+        .sidebar { position: absolute; right: 20px; bottom: 150px; display: flex; flex-direction: column; gap: 20px; }
+        .s-btn { width: 60px; height: 60px; background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); border-radius: 20px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2); font-size: 24px; }
         
-        .dock { position: fixed; bottom: 30px; left: 5%; width: 90%; height: 75px; background: rgba(10,10,10,0.85); backdrop-filter: blur(30px); border-radius: 35px; border: 1px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 9000; }
-        .plus-btn { width: 65px; height: 65px; background: #fff; color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; transform: translateY(-15px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-
-        /* --- UPLOAD OVERLAY --- */
-        #up-status { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 10000; background: #000; padding: 30px; border-radius: 20px; border: 1px solid var(--neon); display: none; text-align: center; }
-
-        @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .dock { position: fixed; bottom: 30px; left: 5%; width: 90%; height: 75px; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); border-radius: 35px; border: 1px solid #333; display: flex; justify-content: space-around; align-items: center; }
+        .plus { width: 65px; height: 65px; background: #fff; color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; transform: translateY(-15px); }
     </style>
 </head>
 <body>
@@ -49,131 +31,64 @@
     <video id="v-live" autoplay playsinline muted></video>
 
     <div id="gate">
-        <h1 style="letter-spacing:10px; margin-bottom:40px;">GLIMPSE V32</h1>
-        <button class="gate-btn" onclick="bootSystem()">SYNC IDENTITY</button>
+        <h1 style="letter-spacing:8px;">GLIMPSE V33</h1>
+        <p style="opacity:0.6; margin-top:10px;">Weltneuheit wird initialisiert...</p>
+        <button class="gate-btn" onclick="activateApp()">SYSTEM STARTEN</button>
+        <p id="err-log" style="color:red; margin-top:20px; font-size:12px;"></p>
     </div>
 
-    <div id="app-ui" style="display:none; position:relative; z-index:10; height:100vh;">
-        
-        <div style="position:fixed; top:50px; left:20px; display:flex; gap:10px; z-index:8000;">
-            <div style="background:rgba(0,0,0,0.6); padding:8px 15px; border-radius:20px; border:1.5px solid var(--gold); color:var(--gold); font-weight:900;">
-                <i class="fas fa-bolt"></i> <span id="gp-val">3400</span> GP
-            </div>
+    <div id="app">
+        <div style="position:fixed; top:50px; left:20px; background:rgba(0,0,0,0.5); padding:8px 15px; border-radius:20px; border:1px solid var(--gold); color:var(--gold); font-weight:900;">
+            <i class="fas fa-bolt"></i> 5.000 GP
         </div>
 
-        <div id="pinned-area" onclick="this.style.display='none'">
-            <div class="pin-box">
-                <span class="pin-label">FIXIERT <i class="fas fa-thumbtack"></i></span>
-                <p id="pin-text" style="margin:0; font-size:14px;">Tippe auf einen Kommentar zum Fixieren! 🚀</p>
-            </div>
-        </div>
-
-        <div id="main-feed">
-            <div class="v-card">
-                <div style="position:absolute; bottom:130px; left:20px;">
-                    <h3 style="color:var(--neon)">@Glimpse_Elite</h3>
-                    <p>Willkommen in der Weltneuheit. Swipe für mehr!</p>
-                    <button style="background:transparent; border:1px solid var(--neon); color:var(--neon); padding:5px 15px; border-radius:15px; font-weight:900;" onclick="toggleFollow(this)">FOLGEN</button>
-                </div>
-                <div class="sidebar">
-                    <div class="s-tool" onclick="mineGP()"><i class="fas fa-heart"></i></div>
-                    <div class="s-tool" onclick="openChat()"><i class="fas fa-comment"></i></div>
-                    <div class="s-tool" onclick="openMessenger()"><i class="fas fa-paper-plane" style="color:var(--neon)"></i></div>
-                    <div class="s-tool" onclick="applyGlitch()"><i class="fas fa-wand-magic-sparkles"></i></div>
-                </div>
-            </div>
+        <div class="sidebar">
+            <div class="s-btn" onclick="location.reload()"><i class="fas fa-power-off"></i></div>
+            <div class="s-btn" onclick="alert('Match Suche...')"><i class="fas fa-swords" style="color:var(--magenta)"></i></div>
+            <div class="s-btn" onclick="alert('G-Power verdoppelt!')"><i class="fas fa-heart" style="color:red"></i></div>
         </div>
 
         <div class="dock">
             <i class="fas fa-house" style="color:var(--neon)"></i>
             <i class="fas fa-magnifying-glass"></i>
-            <label for="vid-up" class="plus-btn"><i class="fas fa-plus"></i></label>
-            <input type="file" id="vid-up" accept="video/*" multiple style="display:none" onchange="uploadVideo(event)">
-            <i class="fas fa-swords" onclick="alert('Battle Arena lädt...')"></i>
+            <label for="up" class="plus"><i class="fas fa-plus"></i></label>
+            <input type="file" id="up" accept="video/*" style="display:none" onchange="alert('Video geladen!')">
+            <i class="fas fa-paper-plane"></i>
             <i class="fas fa-user"></i>
         </div>
     </div>
 
-    <div id="messenger">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2>MESSENGER</h2>
-            <i class="fas fa-times" onclick="document.getElementById('messenger').style.display='none'" style="font-size:24px;"></i>
-        </div>
-        <div class="msg-bubble them">Hey! Schick mir mal dein Video! 🔥</div>
-        <div class="msg-bubble me">Ist gerade im Upload! V32 ist live. 🚀</div>
-    </div>
-
-    <div id="up-status">
-        <div style="width:40px; height:40px; border:4px solid var(--neon); border-top:transparent; border-radius:50%; animation:spin 1s linear infinite; margin:auto;"></div>
-        <p>VERARBEITE OMNI-VIDEO...</p>
-    </div>
-
     <script>
-        let gp = 3400;
+        async function activateApp() {
+            const video = document.getElementById('v-live');
+            const errLog = document.getElementById('err-log');
 
-        async function bootSystem() {
             try {
-                const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
-                document.getElementById('v-live').srcObject = s;
-                document.getElementById('gate').style.display = 'none';
-                document.getElementById('app-ui').style.display = 'block';
-                document.getElementById('main-feed').style.display = 'block';
-            } catch (e) { alert("Cam Error! Bitte Safari-Einstellungen checken."); }
-        }
-
-        function mineGP() {
-            gp += 50;
-            document.getElementById('gp-val').innerText = gp;
-            if(navigator.vibrate) navigator.vibrate(30);
-        }
-
-        function toggleFollow(btn) {
-            btn.innerText = "ABONNIERT ✓";
-            btn.style.background = "var(--neon)";
-            btn.style.color = "#000";
-            if(navigator.vibrate) navigator.vibrate([50,30,50]);
-        }
-
-        function openMessenger() { document.getElementById('messenger').style.display = 'block'; }
-        
-        function openChat() {
-            const p = document.getElementById('pinned-area');
-            const t = document.getElementById('pin-text');
-            t.innerText = "@User_" + Math.floor(Math.random()*999) + ": Diese App ist eine Weltneuheit! 🔥";
-            p.style.display = 'block';
-        }
-
-        function applyGlitch() {
-            const v = document.getElementById('v-live');
-            v.style.filter = "invert(1) hue-rotate(180deg)";
-            setTimeout(() => v.style.filter = "brightness(0.7)", 800);
-            if(navigator.vibrate) navigator.vibrate(100);
-        }
-
-        function uploadVideo(event) {
-            const files = event.target.files;
-            if(!files.length) return;
-            document.getElementById('up-status').style.display = 'block';
-            
-            setTimeout(() => {
-                Array.from(files).forEach(file => {
-                    const url = URL.createObjectURL(file);
-                    const card = document.createElement('div');
-                    card.className = 'v-card';
-                    card.innerHTML = `<video src="${url}" loop autoplay playsinline muted></video>
-                    <div style="position:absolute; bottom:130px; left:20px;"><h3>@Du_Live</h3><p>Neu hochgeladen 🚀</p></div>`;
-                    document.getElementById('main-feed').prepend(card);
+                // Kamera-Abfrage
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "user" }, 
+                    audio: false 
                 });
-                document.getElementById('up-status').style.display = 'none';
-                document.getElementById('main-feed').scrollTo({top:0, behavior:'smooth'});
-                if(navigator.vibrate) navigator.vibrate([100,50,100]);
-            }, 1500);
+                
+                video.srcObject = stream;
+                
+                // Sobald Video bereit, UI zeigen
+                video.onloadedmetadata = () => {
+                    video.play();
+                    document.getElementById('gate').style.display = 'none';
+                    document.getElementById('app').style.display = 'block';
+                };
+
+            } catch (err) {
+                console.error(err);
+                errLog.innerText = "FEHLER: " + err.name + " - " + err.message + 
+                                   "\nBitte Einstellungen > Safari > Kamera prüfen!";
+            }
         }
 
-        @keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+        // Apple Sound Fix
         document.body.addEventListener('touchstart', () => { 
-            const vids = document.querySelectorAll('video');
-            vids.forEach(v => { if(!v.srcObject) v.muted = false; });
+            document.getElementById('v-live').muted = false; 
         }, {once: true});
     </script>
 </body>
