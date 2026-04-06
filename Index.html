@@ -3,209 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SebTok Ultimate App</title>
+    <title>GLIMPSE PRO - TikTok Clone</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* --- BASIS SETUP --- */
-        body, html { 
-            margin: 0; padding: 0; height: 100%; overflow: hidden; 
-            background-color: black; font-family: -apple-system, sans-serif; 
-        }
-        
-        /* --- SEITEN-NAVIGATION --- */
-        #video-page, #profile-page { 
-            height: 100vh; width: 100vw; position: absolute; top: 0; left: 0; 
-            transition: transform 0.3s cubic-bezier(0.65, 0, 0.35, 1); 
-        }
-        #profile-page { 
-            background-color: white; color: black; display: flex; 
-            flex-direction: column; transform: translateX(100%); 
-            overflow-y: auto; padding-bottom: 80px; 
-        }
-        .show-profile #profile-page { transform: translateX(0); }
-        .show-profile #video-page { transform: translateX(-100%); }
+        :root { --tiktok-red: #ff0050; --tiktok-cyan: #00f2ea; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: 'Proxima Nova', sans-serif; color: white; }
 
-        /* --- VIDEO FEED --- */
-        .video-container { 
-            height: 100vh; overflow-y: scroll; 
-            scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; 
-        }
-        .video-card { 
-            height: 100vh; width: 100vw; scroll-snap-align: start; 
-            position: relative; display: flex; align-items: center; justify-content: center; 
-        }
+        /* VIDEO FEED */
+        .feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; }
+        .video-card { height: 100vh; scroll-snap-align: start; position: relative; background: #000; }
         video { width: 100%; height: 100%; object-fit: cover; }
 
-        /* --- UI OVERLAYS (Home) --- */
-        .top-tabs { 
-            position: absolute; top: 45px; width: 100%; display: flex; 
-            justify-content: center; gap: 20px; color: rgba(255,255,255,0.6); 
-            font-weight: bold; z-index: 10; 
-        }
-        .ui-info { 
-            position: absolute; bottom: 85px; left: 15px; color: white; 
-            z-index: 10; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); 
-        }
-        .side-bar { 
-            position: absolute; right: 10px; bottom: 150px; 
-            display: flex; flex-direction: column; align-items: center; gap: 20px; z-index: 10; 
-        }
-        .side-icon { font-size: 30px; color: white; transition: 0.2s; }
-        .profile-pic { 
-            width: 45px; height: 45px; border-radius: 50%; border: 2px solid white; 
-            background-image: url('https://i.pravatar.cc/100'); background-size: cover; 
-            position: relative; 
-        }
-        .follow-plus { 
-            position: absolute; bottom: -8px; background: #ff0050; 
-            border-radius: 50%; width: 18px; height: 18px; 
-            display: flex; align-items: center; justify-content: center; 
-            font-size: 14px; font-weight: bold; color: white; 
-        }
+        /* SIDEBAR INTERACTION */
+        .side-bar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; align-items: center; gap: 15px; z-index: 10; }
+        .icon-group { text-align: center; cursor: pointer; }
+        .icon-group i { font-size: 32px; text-shadow: 1px 1px 5px rgba(0,0,0,0.5); }
+        .icon-group span { display: block; font-size: 12px; margin-top: 4px; font-weight: bold; }
+        .liked { color: var(--tiktok-red); }
 
-        /* --- MUSIK DISK & NOTEN --- */
-        .music-disc {
-            position: absolute; right: 15px; bottom: 85px;
-            width: 45px; height: 45px;
-            background: radial-gradient(circle, #333 20%, #111 100%);
-            border-radius: 50%; border: 8px solid #222;
-            animation: rotateDisc 3s linear infinite; z-index: 10;
-        }
-        @keyframes rotateDisc { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        
-        .note {
-            position: absolute; right: 25px; bottom: 100px;
-            color: white; font-size: 20px; opacity: 0;
-            animation: flowNote 3s infinite; z-index: 5;
-        }
-        @keyframes flowNote {
-            0% { transform: translateY(0) rotate(0); opacity: 0; }
-            30% { opacity: 0.8; }
-            100% { transform: translateY(-100px) translateX(-40px) rotate(45deg); opacity: 0; }
-        }
+        /* LIVE OVERLAY */
+        #live-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; z-index: 9999; }
+        #camera-preview { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        .live-tools { position: absolute; bottom: 50px; width: 100%; text-align: center; }
+        .go-live-btn { background: var(--tiktok-red); border: none; color: white; padding: 15px 40px; border-radius: 30px; font-size: 20px; font-weight: bold; box-shadow: 0 0 20px var(--tiktok-red); }
+        .close-live { position: absolute; top: 40px; right: 20px; font-size: 30px; z-index: 10000; }
 
-        /* --- ANIMATIONEN --- */
-        .big-heart { 
-            position: absolute; font-size: 120px; color: #ff0050; 
-            opacity: 0; transform: scale(0); pointer-events: none; z-index: 100; 
-        }
-        .animate-heart { animation: heartPop 0.8s ease-out; }
-        @keyframes heartPop { 
-            0% { transform: scale(0); opacity: 0; } 
-            20% { transform: scale(1.2); opacity: 0.9; } 
-            100% { transform: scale(2.2); opacity: 0; } 
-        }
-        .is-liked { color: #ff0050 !important; }
+        /* CHAT / COMMENTS */
+        #comment-section { position: fixed; bottom: 0; width: 100%; height: 60%; background: white; border-radius: 15px 15px 0 0; color: black; display: none; z-index: 2000; transition: transform 0.3s; }
+        .comment-header { padding: 15px; text-align: center; border-bottom: 1px solid #eee; font-weight: bold; }
+        #comment-list { height: 70%; overflow-y: auto; padding: 15px; }
+        .comment-input { display: flex; padding: 10px; border-top: 1px solid #eee; }
+        .comment-input input { flex: 1; border: 1px solid #ddd; border-radius: 20px; padding: 10px; outline: none; }
 
-        /* --- PROFIL DESIGN --- */
-        .profile-top { display: flex; flex-direction: column; align-items: center; padding: 50px 0 20px; }
-        .avatar-main { width: 90px; height: 90px; border-radius: 50%; background-image: url('https://i.pravatar.cc/150'); background-size: cover; margin-bottom: 15px; }
-        .stats { display: flex; gap: 25px; margin-bottom: 20px; }
-        .stat-item { text-align: center; }
-        .stat-val { font-weight: bold; font-size: 18px; display: block; }
-        .stat-lab { font-size: 13px; color: gray; }
-        .edit-btn { border: 1px solid #ddd; padding: 8px 40px; border-radius: 4px; font-weight: bold; font-size: 14px; }
-        .video-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin-top: 20px; }
-        .grid-box { aspect-ratio: 3/4; background-color: #333; background-size: cover; background-position: center; }
-
-        /* --- NAV BAR UNTEN --- */
-        .nav-bar { 
-            position: fixed; bottom: 0; width: 100%; height: 60px; background: black; 
-            display: flex; justify-content: space-around; align-items: center; 
-            border-top: 0.5px solid #333; z-index: 1000; 
-        }
-        .nav-btn { display: flex; flex-direction: column; align-items: center; color: #8a8a8e; font-size: 10px; gap: 4px; }
-        .nav-btn.active { color: white; }
-        .plus-icon { 
-            background: linear-gradient(to right, #69C9D0 15%, #EE1D52 85%); 
-            padding: 3px 15px; border-radius: 8px; color: black; font-weight: bold; font-size: 20px; 
-        }
+        /* NAVIGATION */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 60px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 0.5px solid #333; z-index: 1000; }
+        .nav-item { text-align: center; color: #8a8a8e; font-size: 10px; }
+        .nav-item.active { color: white; }
+        .plus-icon { background: linear-gradient(to right, var(--tiktok-cyan), var(--tiktok-red)); padding: 4px 14px; border-radius: 10px; color: black; font-size: 20px; }
     </style>
 </head>
-<body id="main-app">
+<body>
 
-    <div id="video-page">
-        <div class="top-tabs"><span style="color:white; border-bottom:2px solid white">Für dich</span><span>Folge ich</span></div>
-        
-        <div class="video-container">
-            <div class="video-card" onclick="handleDoubleTap(this)">
-                <video src="https://www.w3schools.com/html/mov_bbb.mp4" loop muted autoplay playsinline></video>
-                <div class="big-heart">❤️</div>
-                <div class="music-disc"></div>
-                <div class="note" style="animation-delay: 0s">🎵</div>
-                <div class="note" style="animation-delay: 1.5s">🎶</div>
-                <div class="ui-info"><h3>@seb</h3><p>Meine App ist fertig! 🚀 #coding</p></div>
-                <div class="side-bar">
-                    <div class="profile-pic"><div class="follow-plus" onclick="this.style.display='none'">+</div></div>
-                    <div class="side-icon heart-btn" onclick="like(event, this)">❤️</div>
-                    <div class="side-icon">💬</div>
-                    <div class="side-icon">🔗</div>
-                </div>
-            </div>
-            <div class="video-card" onclick="handleDoubleTap(this)">
-                <video src="https://www.w3schools.com/html/movie.mp4" loop muted autoplay playsinline></video>
-                <div class="big-heart">❤️</div>
-                <div class="music-disc"></div>
-                <div class="ui-info"><h3>@coding_pro</h3><p>Wisch nach oben! 🔥</p></div>
-                <div class="side-bar">
-                    <div class="profile-pic" style="background-image:url('https://i.pravatar.cc/101')"></div>
-                    <div class="side-icon heart-btn" onclick="like(event, this)">❤️</div>
-                    <div class="side-icon">💬</div>
-                    <div class="side-icon">🔗</div>
-                </div>
+    <div id="main-feed" class="feed">
+        <div class="video-card">
+            <video src="https://www.w3schools.com/html/mov_bbb.mp4" loop muted autoplay playsinline></video>
+            <div class="side-bar">
+                <div class="icon-group" onclick="toggleLike(this)"><i class="fa-solid fa-heart"></i><span>1.4M</span></div>
+                <div class="icon-group" onclick="openComments()"><i class="fa-solid fa-comment-dots"></i><span>45.2K</span></div>
+                <div class="icon-group"><i class="fa-solid fa-share"></i><span>Teilen</span></div>
             </div>
         </div>
     </div>
 
-    <div id="profile-page">
-        <div class="profile-top">
-            <div class="avatar-main"></div>
-            <span style="font-weight:bold; font-size:18px;">@seb</span>
-            <div class="stats">
-                <div class="stat-item"><span class="stat-val">12</span><span class="stat-lab">Folge ich</span></div>
-                <div class="stat-item"><span class="stat-val">1.5K</span><span class="stat-lab">Follower</span></div>
-                <div class="stat-item"><span class="stat-val">40K</span><span class="stat-lab">Likes</span></div>
-            </div>
-            <div class="edit-btn">Profil bearbeiten</div>
+    <div id="live-screen">
+        <span class="close-live" onclick="stopLive()">✕</span>
+        <video id="camera-preview" autoplay playsinline></video>
+        <div class="live-tools">
+            <button class="go-live-btn" onclick="startBroadcasting()">JETZT LIVE GEHEN</button>
         </div>
-        <div class="video-grid">
-            <div class="grid-box" style="background-image:url('https://picsum.photos/200/300?random=1')"></div>
-            <div class="grid-box" style="background-image:url('https://picsum.photos/200/300?random=2')"></div>
-            <div class="grid-box" style="background-image:url('https://picsum.photos/200/300?random=3')"></div>
-            <div class="grid-box" style="background-image:url('https://picsum.photos/200/300?random=4')"></div>
-            <div class="grid-box" style="background-image:url('https://picsum.photos/200/300?random=5')"></div>
-            <div class="grid-box" style="background-image:url('https://picsum.photos/200/300?random=6')"></div>
+    </div>
+
+    <div id="comment-section">
+        <div class="comment-header">Kommentare <span onclick="closeComments()" style="float:right">✕</span></div>
+        <div id="comment-list"></div>
+        <div class="comment-input">
+            <input type="text" id="new-comment" placeholder="Kommentieren...">
+            <button onclick="addComment()" style="border:none; background:none; color:var(--tiktok-red); font-weight:bold">Senden</button>
         </div>
     </div>
 
     <div class="nav-bar">
-        <div class="nav-btn active" onclick="nav('home', this)"><span>🏠</span><span>Home</span></div>
-        <div class="nav-btn"><span>🔍</span><span>Entdecken</span></div>
-        <div class="nav-btn"><div class="plus-icon">+</div></div>
-        <div class="nav-btn"><span>📥</span><span>Posteingang</span></div>
-        <div class="nav-btn" onclick="nav('profile', this)"><span>👤</span><span>Profil</span></div>
+        <div class="nav-item active"><i class="fa-solid fa-house" style="font-size:20px"></i><br>Home</div>
+        <div class="nav-item" onclick="startLiveMode()"><div class="plus-icon">+</div></div>
+        <div class="nav-item" onclick="alert('Profil bald verfügbar!')"><i class="fa-solid fa-user" style="font-size:20px"></i><br>Profil</div>
     </div>
 
     <script>
-        let lastTap = 0;
-        function handleDoubleTap(card) {
-            const now = Date.now();
-            if (now - lastTap < 300) {
-                const heart = card.querySelector('.big-heart');
-                heart.classList.remove('animate-heart');
-                void heart.offsetWidth;
-                heart.classList.add('animate-heart');
-                card.querySelector('.heart-btn').classList.add('is-liked');
-            }
-            lastTap = now;
+        // LIVE GEHEN (KAMERA AKTIVIEREN)
+        let videoStream;
+        async function startLiveMode() {
+            document.getElementById('live-screen').style.display = 'block';
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+                document.getElementById('camera-preview').srcObject = videoStream;
+            } catch (e) { alert("Kamera-Fehler: " + e); }
         }
 
-        function like(e, el) { e.stopPropagation(); el.classList.toggle('is-liked'); }
+        function stopLive() {
+            if(videoStream) videoStream.getTracks().forEach(t => t.stop());
+            document.getElementById('live-screen').style.display = 'none';
+        }
 
-        function nav(page, btn) {
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            if(page === 'profile') document.getElementById('main-app').classList.add('show-profile');
-            else document.getElementById('main-app').classList.remove('show-profile');
+        function startBroadcasting() {
+            const btn = document.querySelector('.go-live-btn');
+            btn.innerText = "DU BIST LIVE 🔴";
+            btn.style.background = "#444";
+        }
+
+        // LIKES
+        function toggleLike(el) {
+            el.classList.toggle('liked');
+        }
+
+        // KOMMENTARE
+        function openComments() { document.getElementById('comment-section').style.display = 'block'; }
+        function closeComments() { document.getElementById('comment-section').style.display = 'none'; }
+        
+        function addComment() {
+            const inp = document.getElementById('new-comment');
+            if(inp.value) {
+                const div = document.createElement('div');
+                div.innerHTML = `<b>User:</b> ${inp.value}<hr>`;
+                document.getElementById('comment-list').appendChild(div);
+                inp.value = "";
+            }
         }
     </script>
 </body>
