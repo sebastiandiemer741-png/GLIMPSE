@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SebTok Ultimate App</title>
+    <style>
+        /* --- BASIS SETUP --- */
+        body, html { 
+            margin: 0; padding: 0; height: 100%; overflow: hidden; 
+            background-color: black; font-family: -apple-system, sans-serif; 
+        }
+        
+        /* --- SEITEN-NAVIGATION --- */
+        #video-page, #profile-page { 
+            height: 100vh; width: 100vw; position: absolute; top: 0; left: 0; 
+            transition: transform 0.3s cubic-bezier(0.65, 0, 0.35, 1); 
+        }
+        #profile-page { 
+            background-color: white; color: black; display: flex; 
+            flex-direction: column; transform: translateX(100%); 
+            overflow-y: auto; padding-bottom: 80px; 
+        }
+        .show-profile #profile-page { transform: translateX(0); }
+        .show-profile #video-page { transform: translateX(-100%); }
+
+        /* --- VIDEO FEED --- */
+        .video-container { 
+            height: 100vh; overflow-y: scroll; 
+            scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; 
+        }
+        .video-card { 
+            height: 100vh; width: 100vw; scroll-snap-align: start; 
+            position: relative; display: flex; align-items: center; justify-content: center; 
+        }
+        video { width: 100%; height: 100%; object-fit: cover; }
+
+        /* --- UI OVERLAYS (Home) --- */
+        .top-tabs { 
+            position: absolute; top: 45px; width: 100%; display: flex; 
+            justify-content: center; gap: 20px; color: rgba(255,255,255,0.6); 
+            font-weight: bold; z-index: 10; 
+        }
+        .ui-info { 
+            position: absolute; bottom: 85px; left: 15px; color: white; 
+            z-index: 10; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); 
+        }
+        .side-bar { 
+            position: absolute; right: 10px; bottom: 150px; 
+            display: flex; flex-direction: column; align-items: center; gap: 20px; z-index: 10; 
+        }
+        .side-icon { font-size: 30px; color: white; transition: 0.2s; }
+        .profile-pic { 
+            width: 45px; height: 45px; border-radius: 50%; border: 2px solid white; 
+            background-image: url('https://i.pravatar.cc/100'); background-size: cover; 
+            position: relative; 
+        }
+        .follow-plus { 
+            position: absolute; bottom: -8px; background: #ff0050; 
+            border-radius: 50%; width: 18px; height: 18px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 14px; font-weight: bold; color: white; 
+        }
+
+        /* --- MUSIK DISK & NOTEN --- */
+        .music-disc {
+            position: absolute; right: 15px; bottom: 85px;
+            width: 45px; height: 45px;
+            background: radial-gradient(circle, #333 20%, #111 100%);
+            border-radius: 50%; border: 8px solid #222;
+            animation: rotateDisc 3s linear infinite; z-index: 10;
+        }
+        @keyframes rotateDisc { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        .note {
+            position: absolute; right: 25px; bottom: 100px;
+            color: white; font-size: 20px; opacity: 0;
+            animation: flowNote 3s infinite; z-index: 5;
+        }
+        @keyframes flowNote {
+            0% { transform: translateY(0) rotate(0); opacity: 0; }
+            30% { opacity: 0.8; }
+            100% { transform: translateY(-100px) translateX(-40px) rotate(45deg); opacity: 0; }
+        }
+
+        /* --- ANIMATIONEN --- */
+        .big-heart { 
+            position: absolute; font-size: 120px; color: #ff0050; 
+            opacity: 0; transform: scale(0); pointer-events: none; z-index: 100; 
+        }
+        .animate-heart { animation: heartPop 0.8s ease-out; }
+        @keyframes heartPop { 
+            0% { transform: scale(0); opacity: 0; } 
+            20% { transform: scale(1.2); opacity: 0.9; } 
+            100% { transform: scale(2.2); opacity: 0; } 
+        }
+        .is-liked { color: #ff0050 !important; }
+
+        /* --- PROFIL DESIGN --- */
+        .profile-top { display: flex; flex-direction: column; align-items: center; padding: 50px 0 20px; }
+        .avatar-main { width: 90px; height: 90px; border-radius: 50%; background-image: url('https://i.pravatar.cc/150'); background-size: cover; margin-bottom: 15px; }
+        .stats { display: flex; gap: 25px; margin-bottom: 20px; }
+        .stat-item { text-align: center; }
+        .stat-val { font-weight: bold; font-size: 18px; display: block; }
+        .stat-lab { font-size: 13px; color: gray; }
+        .edit-btn { border: 1px solid #ddd; padding: 8px 40px; border-radius: 4px; font-weight: bold; font-size: 14px; }
+        .video-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin-top: 20px; }
+        .grid-box { aspect-ratio: 3/4; background-color: #333; background-size: cover; background-position: center; }
+
+        /* --- NAV BAR UNTEN --- */
+        .nav-bar { 
+            position: fixed; bottom: 0; width: 100%; height: 60px; background: black; 
+            display: flex; justify-content: space-around; align-items: center; 
+            border-top: 0.5px solid #333; z-index: 1000; 
+        }
+        .nav-btn { display: flex; flex-direction: column; align-items: center; color: #8a8a8e; font-size: 10px; gap: 4px; }
+        .nav-btn.active { color: white; }
+        .plus-icon { 
+            background: linear-gradient(to right, #69C9D0 15%, #EE1D52 85%); 
+            padding: 3px 15px; border-radius: 8px; color: black; font-weight: bold; font-size: 20px; 
+        }
+    </style>
+</head>
+<body id="main-app">
+
+    <div id="video-page">
+        <div class="top-tabs"><span style="color:white; border-bottom:2px solid white">Für dich</span><span>Folge ich</span></div>
+        
+        <div class="video-container">
+            <div class="video-card" onclick="handleDoubleTap(this)">
+                <video src="https://www.w3schools.com/html/mov_bbb.mp4" loop muted autoplay playsinline></video>
+                <div class="big-heart">❤️</div>
+                <div class="music-disc"></div>
+                <div class="note" style="animation-delay: 0s">🎵</div>
+                <div class="note" style="animation-delay: 1.5s">🎶</div>
+                <div class="ui-info"><h3>@seb</h3><p>Meine App ist fertig! 🚀 #coding</p></div>
+                <div class="side-bar">
+                    <div class="profile-pic"><div class="follow-plus" onclick="this.style.display='none'">+</div></div>
+                    <div class="side-icon heart-btn" onclick="like(event, this)">❤️</div>
+                    <div class="side-icon">💬</div>
+                    <div class="side-icon">🔗</div>
+                </div>
+            </div>
+            <div class="video-card" onclick="handleDoubleTap(this)">
+                <video src="https://www.w3schools.com/html/movie.mp4" loop muted autoplay playsinline></video>
+                <div class="big-heart">❤️</div>
+                <div class="music-disc"></div>
+                <div class="ui-info"><h3>@coding_pro</h3><p>Wisch nach oben! 🔥</p></div>
+                <div class="side-bar">
+                    <div class="profile-pic" style="background-image:url('https://i.pravatar.cc/101')"></div>
+                    <div class="side-icon heart-btn" onclick="like(event, this)">❤️</div>
+                    <div class="side-icon">💬</div>
+                    <div class="side-icon">🔗</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="profile-page">
+        <div class="profile-top">
+            <div class="avatar-main"></div>
+            <span style="font-weight:bold; font-size:18px;">@seb</span>
+            <div class="stats">
+                <div class="stat-item"><span class="stat-val">12</span><span class="stat-lab">Folge ich</span></div>
+                <div class="stat-item"><span class="stat-val">1.5K</span><span class="stat-lab">Follower</span></div>
+                <div class="stat-item"><span class="stat-val">40K</span><span class="stat-lab">Likes</span></div>
+            </div>
+            <div class="edit-btn">Profil bearbeiten</div>
+        </div>
+        <div class="video-grid">
+            <div class="grid-box" style="background-image:url('https://picsum.photos/200/300?random=1')"></div>
+            <div class="grid-box" style="background-image:url('https://picsum.photos/200/300?random=2')"></div>
+            <div class="grid-box" style="background-image:url('https://picsum.photos/200/300?random=3')"></div>
+            <div class="grid-box" style="background-image:url('https://picsum.photos/200/300?random=4')"></div>
+            <div class="grid-box" style="background-image:url('https://picsum.photos/200/300?random=5')"></div>
+            <div class="grid-box" style="background-image:url('https://picsum.photos/200/300?random=6')"></div>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <div class="nav-btn active" onclick="nav('home', this)"><span>🏠</span><span>Home</span></div>
+        <div class="nav-btn"><span>🔍</span><span>Entdecken</span></div>
+        <div class="nav-btn"><div class="plus-icon">+</div></div>
+        <div class="nav-btn"><span>📥</span><span>Posteingang</span></div>
+        <div class="nav-btn" onclick="nav('profile', this)"><span>👤</span><span>Profil</span></div>
+    </div>
+
+    <script>
+        let lastTap = 0;
+        function handleDoubleTap(card) {
+            const now = Date.now();
+            if (now - lastTap < 300) {
+                const heart = card.querySelector('.big-heart');
+                heart.classList.remove('animate-heart');
+                void heart.offsetWidth;
+                heart.classList.add('animate-heart');
+                card.querySelector('.heart-btn').classList.add('is-liked');
+            }
+            lastTap = now;
+        }
+
+        function like(e, el) { e.stopPropagation(); el.classList.toggle('is-liked'); }
+
+        function nav(page, btn) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if(page === 'profile') document.getElementById('main-app').classList.add('show-profile');
+            else document.getElementById('main-app').classList.remove('show-profile');
+        }
+    </script>
+</body>
+</html>
