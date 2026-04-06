@@ -1,86 +1,80 @@
-<script>
-    let gp = 750;
-    const canvas = document.getElementById('fx-canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>GLIMPSE V23 | CAMERA FORCE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --neon: #00f2ea; --magenta: #ff00ff; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; font-family: sans-serif; color: white; overflow: hidden; }
+        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .gate-btn { padding: 20px 40px; border-radius: 30px; border: none; background: var(--neon); font-weight: 900; margin-top: 20px; }
+        .app { display: none; height: 100%; position: relative; }
+        #v-main { width: 100%; height: 100%; object-fit: cover; background: #222; }
+        .sidebar { position: absolute; right: 20px; bottom: 150px; z-index: 5000; }
+        .s-btn { width: 60px; height: 60px; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 20px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--neon); margin-bottom: 20px; }
+    </style>
+</head>
+<body>
 
-    function startFXApp() {
-        const name = document.getElementById('user-id').value;
-        if(name.length > 1) {
-            document.getElementById('display-name').innerText = "@" + name;
-            document.getElementById('gate').style.display = 'none';
-            document.getElementById('app').style.display = 'block';
-        }
-    }
+    <div id="gate">
+        <h1 style="color:var(--neon)">GLIMPSE V23</h1>
+        <p>Kamera-Zugriff erforderlich für Weltneuheit</p>
+        <button class="gate-btn" onclick="startWithCamera()">JETZT AKTIVIEREN</button>
+    </div>
 
-    // VERBESSERTER KAMERA-ZUGRIFF
-    let live = false;
-    async function toggleFXPanel() {
-        const p = document.getElementById('fx-panel');
-        const videoElement = document.getElementById('v-main');
+    <div id="app" class="app">
+        <video id="v-main" autoplay playsinline muted></video>
         
-        // Wenn wir noch nicht "Live" sind, fragen wir nach der Kamera
-        if(!live) {
+        <div class="sidebar">
+            <div class="s-btn" onclick="triggerFX()"><i class="fas fa-wand-magic-sparkles"></i></div>
+            <div class="s-btn" onclick="location.reload()"><i class="fas fa-refresh"></i></div>
+        </div>
+
+        <div style="position:absolute; bottom:50px; width:100%; text-align:center;">
+            <p>SQUAD-MODE AKTIV 🚀</p>
+        </div>
+    </div>
+
+    <script>
+        async function startWithCamera() {
+            const video = document.getElementById('v-main');
+            const gate = document.getElementById('gate');
+            const app = document.getElementById('app');
+
             try {
+                // Wir fragen die Kamera DIREKT beim Button-Klick ab (iOS verlangt User-Interaktion)
                 const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "user" }, 
+                    video: { 
+                        facingMode: "user",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }, 
                     audio: false 
                 });
-                // Weltneuheit: Wir spiegeln DEIN Kamerabild in das Video-Fenster!
-                videoElement.srcObject = stream;
-                videoElement.play();
-                live = true;
-                p.style.display = 'block';
-            } catch(err) {
-                alert("Kamera-Fehler: Bitte erlaube den Zugriff in den iPhone-Einstellungen > Safari > Kamera.");
-                console.error(err);
+                
+                video.srcObject = stream;
+                
+                // Wichtig für iPhone: Video muss "geladen" sein
+                video.onloadedmetadata = () => {
+                    video.play();
+                    gate.style.display = 'none';
+                    app.style.display = 'block';
+                };
+
+            } catch (err) {
+                console.error("Fehler:", err);
+                alert("Kamera-Fehler! Bitte gehe zu:\nEinstellungen > Safari > Kamera > Erlauben.\n\nFehler-Details: " + err.name);
             }
-        } else {
-            p.style.display = (p.style.display === 'block') ? 'none' : 'block';
         }
-    }
 
-    function triggerFX(type) {
-        const v = document.getElementById('v-main');
-        if(type === 'shake') {
-            v.style.transform = "scale(1.1) rotate(5deg)";
-            setTimeout(() => v.style.transform = "scale(1)", 500);
+        function triggerFX() {
+            const v = document.getElementById('v-main');
+            v.style.filter = "hue-rotate(90deg) invert(1)";
+            setTimeout(() => v.style.filter = "none", 1000);
+            if(navigator.vibrate) navigator.vibrate(50);
         }
-        if(type === 'morph') {
-            v.style.filter = "hue-rotate(180deg) invert(1)";
-            setTimeout(() => v.style.filter = "none", 2000);
-        }
-        if(type === 'fireworks') { createParticles(); }
-        if(navigator.vibrate) navigator.vibrate([50, 30, 50]);
-    }
-
-    function createParticles() {
-        const particles = [];
-        for(let i=0; i<50; i++) {
-            particles.push({
-                x: Math.random() * canvas.width,
-                y: canvas.height,
-                speed: Math.random() * 15 + 5,
-                color: `hsl(${Math.random() * 360}, 100%, 50%)`
-            });
-        }
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                p.y -= p.speed;
-                ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-                ctx.fill();
-            });
-            if(particles.length > 0 && particles[0].y > -50) requestAnimationFrame(animate);
-        }
-        animate();
-    }
-
-    document.body.addEventListener('touchstart', () => { 
-        const v = document.getElementById('v-main');
-        if(!v.srcObject) v.muted = false; 
-    }, {once: true});
-</script>
+    </script>
+</body>
+</html>
