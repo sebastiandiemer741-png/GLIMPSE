@@ -3,119 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GLIMPSE PRO - TikTok Clone</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>GLIMPSE X - Next Gen Social</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --tiktok-red: #ff0050; --tiktok-cyan: #00f2ea; }
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: 'Proxima Nova', sans-serif; color: white; }
+        :root { --accent: #00ffcc; --neon-red: #ff0055; --bg: #050505; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: white; }
 
-        /* VIDEO FEED */
-        .feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; }
-        .video-card { height: 100vh; scroll-snap-align: start; position: relative; background: #000; }
-        video { width: 100%; height: 100%; object-fit: cover; }
+        /* NEON-GLASS DESIGN */
+        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; }
 
-        /* SIDEBAR INTERACTION */
-        .side-bar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; align-items: center; gap: 15px; z-index: 10; }
-        .icon-group { text-align: center; cursor: pointer; }
-        .icon-group i { font-size: 32px; text-shadow: 1px 1px 5px rgba(0,0,0,0.5); }
-        .icon-group span { display: block; font-size: 12px; margin-top: 4px; font-weight: bold; }
-        .liked { color: var(--tiktok-red); }
+        /* DER FEED */
+        .feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
+        .video-card { height: 100vh; scroll-snap-align: start; position: relative; }
+        video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.9); }
 
-        /* LIVE OVERLAY */
-        #live-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; z-index: 9999; }
-        #camera-preview { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        .live-tools { position: absolute; bottom: 50px; width: 100%; text-align: center; }
-        .go-live-btn { background: var(--tiktok-red); border: none; color: white; padding: 15px 40px; border-radius: 30px; font-size: 20px; font-weight: bold; box-shadow: 0 0 20px var(--tiktok-red); }
-        .close-live { position: absolute; top: 40px; right: 20px; font-size: 30px; z-index: 10000; }
+        /* SIDEBAR (RECHTS) */
+        .side-bar { position: absolute; right: 15px; bottom: 120px; display: flex; flex-direction: column; gap: 25px; z-index: 100; }
+        .action-box { display: flex; flex-direction: column; align-items: center; transition: 0.2s; }
+        .action-box i { font-size: 30px; filter: drop-shadow(0 0 5px rgba(0,0,0,0.8)); }
+        .action-box span { font-size: 11px; font-weight: 700; margin-top: 5px; text-transform: uppercase; }
+        .liked { color: var(--neon-red); transform: scale(1.2); }
 
-        /* CHAT / COMMENTS */
-        #comment-section { position: fixed; bottom: 0; width: 100%; height: 60%; background: white; border-radius: 15px 15px 0 0; color: black; display: none; z-index: 2000; transition: transform 0.3s; }
-        .comment-header { padding: 15px; text-align: center; border-bottom: 1px solid #eee; font-weight: bold; }
-        #comment-list { height: 70%; overflow-y: auto; padding: 15px; }
-        .comment-input { display: flex; padding: 10px; border-top: 1px solid #eee; }
-        .comment-input input { flex: 1; border: 1px solid #ddd; border-radius: 20px; padding: 10px; outline: none; }
+        /* LIVE GEHEN - DAS "EXTRA" */
+        #live-hub { position: fixed; inset: 0; background: #000; display: none; z-index: 5000; }
+        #live-cam { width: 100%; height: 100%; object-fit: cover; }
+        .live-overlay-ui { position: absolute; inset: 0; padding: 50px 20px; pointer-events: none; }
+        .live-status { background: var(--neon-red); color: white; padding: 5px 15px; border-radius: 5px; font-weight: 800; animation: pulse 1s infinite; pointer-events: auto; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* NAVIGATION */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 60px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 0.5px solid #333; z-index: 1000; }
-        .nav-item { text-align: center; color: #8a8a8e; font-size: 10px; }
-        .nav-item.active { color: white; }
-        .plus-icon { background: linear-gradient(to right, var(--tiktok-cyan), var(--tiktok-red)); padding: 4px 14px; border-radius: 10px; color: black; font-size: 20px; }
+        /* GHOST CHAT */
+        #ghost-chat { position: fixed; bottom: 80px; left: 15px; width: 70%; max-height: 200px; overflow-y: hidden; z-index: 1000; pointer-events: none; }
+        .ghost-msg { background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 10px; margin-bottom: 5px; font-size: 13px; animation: fadeOut 8s forwards; border-left: 3px solid var(--accent); }
+        @keyframes fadeOut { 0% { opacity: 1; transform: translateY(0); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-20px); } }
+
+        /* NAV BAR (X-DESIGN) */
+        .nav-x { position: fixed; bottom: 20px; left: 5%; width: 90%; height: 65px; display: flex; justify-content: space-around; align-items: center; z-index: 4000; }
+        .nav-link { color: rgba(255,255,255,0.5); font-size: 20px; transition: 0.3s; }
+        .nav-link.active { color: var(--accent); text-shadow: 0 0 15px var(--accent); }
+        .x-btn { width: 55px; height: 55px; background: white; color: black; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 0 20px rgba(255,255,255,0.4); transform: translateY(-10px); }
+
+        /* COMMENTS */
+        #comment-panel { position: fixed; bottom: 0; width: 100%; height: 50%; background: #111; border-radius: 25px 25px 0 0; display: none; z-index: 6000; flex-direction: column; }
+        .panel-header { padding: 20px; border-bottom: 1px solid #222; text-align: center; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="main-feed" class="feed">
+    <div class="feed" id="feed">
         <div class="video-card">
             <video src="https://www.w3schools.com/html/mov_bbb.mp4" loop muted autoplay playsinline></video>
+            <div id="ghost-chat"></div>
             <div class="side-bar">
-                <div class="icon-group" onclick="toggleLike(this)"><i class="fa-solid fa-heart"></i><span>1.4M</span></div>
-                <div class="icon-group" onclick="openComments()"><i class="fa-solid fa-comment-dots"></i><span>45.2K</span></div>
-                <div class="icon-group"><i class="fa-solid fa-share"></i><span>Teilen</span></div>
+                <div class="action-box" onclick="toggleLike(this)"><i class="fas fa-bolt"></i><span>99k</span></div>
+                <div class="action-box" onclick="openComments()"><i class="fas fa-comment-dots"></i><span>Chat</span></div>
+                <div class="action-box" onclick="vibrateDevice()"><i class="fas fa-wave-square"></i><span>Feel</span></div>
             </div>
         </div>
     </div>
 
-    <div id="live-screen">
-        <span class="close-live" onclick="stopLive()">✕</span>
-        <video id="camera-preview" autoplay playsinline></video>
-        <div class="live-tools">
-            <button class="go-live-btn" onclick="startBroadcasting()">JETZT LIVE GEHEN</button>
+    <div id="live-hub">
+        <video id="live-cam" autoplay playsinline></video>
+        <div class="live-overlay-ui">
+            <span class="live-status">X-STREAM LIVE</span>
+            <div style="margin-top: 20px; font-size: 12px; opacity: 0.8;">MULTICAM AKTIV</div>
+            <button onclick="closeLive()" style="position:absolute; top:45px; right:20px; background:none; border:none; color:white; font-size:30px; pointer-events:auto;">✕</button>
         </div>
     </div>
 
-    <div id="comment-section">
-        <div class="comment-header">Kommentare <span onclick="closeComments()" style="float:right">✕</span></div>
-        <div id="comment-list"></div>
-        <div class="comment-input">
-            <input type="text" id="new-comment" placeholder="Kommentieren...">
-            <button onclick="addComment()" style="border:none; background:none; color:var(--tiktok-red); font-weight:bold">Senden</button>
-        </div>
+    <div class="nav-x glass">
+        <div class="nav-link active" onclick="location.reload()"><i class="fas fa-compass"></i></div>
+        <div class="x-btn" onclick="goLive()"><i class="fas fa-plus"></i></div>
+        <div class="nav-link" onclick="alert('Glimpse X Profile')"><i class="fas fa-shield-halved"></i></div>
     </div>
 
-    <div class="nav-bar">
-        <div class="nav-item active"><i class="fa-solid fa-house" style="font-size:20px"></i><br>Home</div>
-        <div class="nav-item" onclick="startLiveMode()"><div class="plus-icon">+</div></div>
-        <div class="nav-item" onclick="alert('Profil bald verfügbar!')"><i class="fa-solid fa-user" style="font-size:20px"></i><br>Profil</div>
+    <div id="comment-panel">
+        <div class="panel-header">Ghost Chat <span style="float:right" onclick="closeComments()">✕</span></div>
+        <div id="panel-msgs" style="flex:1; overflow-y:auto; padding:20px;"></div>
+        <div style="padding:20px; display:flex;">
+            <input type="text" id="msg-input" placeholder="Nachricht schreiben..." style="flex:1; background:#222; border:none; color:white; padding:12px; border-radius:10px;">
+            <button onclick="sendGhostMsg()" style="background:var(--accent); border:none; margin-left:10px; padding:10px 20px; border-radius:10px; font-weight:bold;">Senden</button>
+        </div>
     </div>
 
     <script>
-        // LIVE GEHEN (KAMERA AKTIVIEREN)
-        let videoStream;
-        async function startLiveMode() {
-            document.getElementById('live-screen').style.display = 'block';
-            try {
-                videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
-                document.getElementById('camera-preview').srcObject = videoStream;
-            } catch (e) { alert("Kamera-Fehler: " + e); }
-        }
+        let stream;
 
-        function stopLive() {
-            if(videoStream) videoStream.getTracks().forEach(t => t.stop());
-            document.getElementById('live-screen').style.display = 'none';
-        }
-
-        function startBroadcasting() {
-            const btn = document.querySelector('.go-live-btn');
-            btn.innerText = "DU BIST LIVE 🔴";
-            btn.style.background = "#444";
-        }
-
-        // LIKES
         function toggleLike(el) {
             el.classList.toggle('liked');
+            if(el.classList.contains('liked')) {
+                sendGhostMsg("Hat das Video geblitzt! ⚡");
+            }
         }
 
-        // KOMMENTARE
-        function openComments() { document.getElementById('comment-section').style.display = 'block'; }
-        function closeComments() { document.getElementById('comment-section').style.display = 'none'; }
-        
-        function addComment() {
-            const inp = document.getElementById('new-comment');
-            if(inp.value) {
-                const div = document.createElement('div');
-                div.innerHTML = `<b>User:</b> ${inp.value}<hr>`;
-                document.getElementById('comment-list').appendChild(div);
-                inp.value = "";
+        async function goLive() {
+            document.getElementById('live-hub').style.display = 'block';
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+                document.getElementById('live-cam').srcObject = stream;
+            } catch(e) { alert("Cam Error: " + e); }
+        }
+
+        function closeLive() {
+            if(stream) stream.getTracks().forEach(t => t.stop());
+            document.getElementById('live-hub').style.display = 'none';
+        }
+
+        function openComments() { document.getElementById('comment-panel').style.display = 'flex'; }
+        function closeComments() { document.getElementById('comment-panel').style.display = 'none'; }
+
+        function sendGhostMsg(text = null) {
+            const input = document.getElementById('msg-input');
+            const val = text || input.value;
+            if(!val) return;
+
+            const msg = document.createElement('div');
+            msg.className = "ghost-msg";
+            msg.innerText = val;
+            document.getElementById('ghost-chat').appendChild(msg);
+            
+            if(!text) input.value = "";
+            
+            // Nachricht nach 8 Sekunden aus dem DOM entfernen
+            setTimeout(() => msg.remove(), 8500);
+        }
+
+        function vibrateDevice() {
+            if ("vibrate" in navigator) {
+                navigator.vibrate([100, 50, 100]);
+                alert("Haptisches Feedback simuliert! (Vibration)");
+            } else {
+                alert("Dein Browser unterstützt keine Vibration.");
             }
         }
     </script>
