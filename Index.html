@@ -3,103 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE OMNIVERSE</title>
+    <title>GLIMPSE OMNI-ONE</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --neon: #00f2ea; --insta: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); --glass: rgba(255,255,255,0.1); }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        :root { --accent: #00f2ea; --gradient: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); --glass: rgba(255,255,255,0.1); }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { margin: 0; padding: 0; height: 100%; background: #000; font-family: -apple-system, system-ui, sans-serif; color: white; overflow: hidden; }
 
-        /* --- NEURAL LOGIN GATE --- */
+        /* --- LOGIN GATE --- */
         #gate { position: fixed; inset: 0; background: #000; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 1s cubic-bezier(0.8, 0, 0.2, 1); }
-        .logo { font-size: 55px; font-weight: 900; letter-spacing: -2px; background: var(--insta); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 20px rgba(220,39,67,0.4)); animation: pulse 3s infinite; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } }
-        .input-box { width: 85%; background: #111; border: 1px solid #222; padding: 22px; border-radius: 25px; color: white; margin-top: 50px; text-align: center; font-size: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .btn-initiate { width: 85%; margin-top: 20px; padding: 20px; border-radius: 25px; border: none; background: white; color: black; font-weight: 900; font-size: 16px; cursor: pointer; }
+        .logo { font-size: 50px; font-weight: 900; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 15px rgba(255,255,255,0.3)); margin-bottom: 40px; }
+        .gate-input { width: 85%; background: #111; border: 1px solid #333; padding: 22px; border-radius: 25px; color: white; text-align: center; font-size: 18px; outline: none; }
+        .gate-btn { width: 85%; margin-top: 20px; padding: 20px; border-radius: 25px; border: none; background: white; color: black; font-weight: 900; cursor: pointer; }
 
-        /* --- OMNI-INTERFACE --- */
+        /* --- APP STRUCTURE --- */
         .app-shell { display: none; height: 100%; position: relative; }
         
-        /* STORIES (INSTA-DNA) */
+        /* STORIES (COMMUNITY NODES) */
         .story-bar { position: fixed; top: 45px; width: 100%; height: 110px; display: flex; gap: 15px; padding: 10px 20px; z-index: 5000; overflow-x: auto; scrollbar-width: none; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); }
         .story-bar::-webkit-scrollbar { display: none; }
-        .story { flex-shrink: 0; width: 72px; height: 72px; border-radius: 50%; background: var(--insta); padding: 3px; position: relative; }
+        .story { flex-shrink: 0; width: 72px; height: 72px; border-radius: 50%; background: var(--gradient); padding: 3px; position: relative; }
         .story img { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #000; object-fit: cover; }
         .story-name { position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%); font-size: 11px; white-space: nowrap; }
 
-        /* FEED (TIKTOK-DNA) */
+        /* VIDEO FEED (THE PULSE) */
         .feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
         .v-card { height: 100vh; width: 100vw; scroll-snap-align: start; position: relative; }
         video { width: 100%; height: 100%; object-fit: cover; }
 
-        /* ACTIONS */
-        .side-ui { position: absolute; right: 15px; bottom: 130px; display: flex; flex-direction: column; gap: 28px; z-index: 1000; }
-        .ui-item { width: 55px; height: 55px; background: var(--glass); backdrop-filter: blur(25px); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
-        .ui-item i { font-size: 26px; }
-        .ui-item.active { color: #ff3040; border-color: #ff3040; }
+        /* SIDEBAR (COMMUNITY TOOLS) */
+        .sidebar { position: absolute; right: 15px; bottom: 130px; display: flex; flex-direction: column; gap: 25px; z-index: 1000; }
+        .s-btn { width: 55px; height: 55px; background: var(--glass); backdrop-filter: blur(25px); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
+        .s-btn i { font-size: 26px; }
 
-        /* THE NEUHEIT: HOLO-STREAM */
-        #holo { position: fixed; top: 170px; right: 20px; width: 120px; height: 120px; border-radius: 35px; border: 2.5px solid var(--neon); overflow: hidden; display: none; z-index: 8000; box-shadow: 0 0 40px rgba(0,242,234,0.5); animation: float 4s infinite ease-in-out; }
-        @keyframes float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-15px) scale(1.03); } }
-        #live { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        /* NEUHEIT: CHAT OVERLAY (COMMUNITY) */
+        #community-chat { position: absolute; bottom: 110px; left: 15px; width: 280px; max-height: 200px; overflow-y: auto; z-index: 2000; pointer-events: none; }
+        .chat-msg { background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); padding: 8px 12px; border-radius: 12px; margin-bottom: 5px; font-size: 13px; border-left: 3px solid var(--accent); animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* HOLO-LIVE (THE FUTURE) */
+        #holo { position: fixed; top: 170px; right: 20px; width: 125px; height: 125px; border-radius: 35px; border: 2.5px solid var(--accent); overflow: hidden; display: none; z-index: 8000; box-shadow: 0 0 40px rgba(0,242,234,0.5); animation: float 4s infinite ease-in-out; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        #webcam { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 
         /* NAVIGATION */
         .nav { position: fixed; bottom: 0; width: 100%; height: 90px; background: rgba(0,0,0,0.95); backdrop-filter: blur(30px); border-top: 0.5px solid #222; display: flex; justify-content: space-around; align-items: center; padding-bottom: 25px; z-index: 9000; }
-        .nav i { font-size: 25px; color: #555; transition: 0.3s; }
+        .nav i { font-size: 24px; color: #555; transition: 0.3s; }
         .nav i.active { color: white; text-shadow: 0 0 10px white; }
-        .plus { width: 50px; height: 35px; background: white; color: black; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 22px; }
+        .plus-btn { width: 50px; height: 35px; background: white; color: black; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 22px; }
     </style>
 </head>
 <body>
 
     <div id="gate">
-        <div class="logo">OMNIVERSE</div>
-        <p style="color: #444; letter-spacing: 2px;">THE ULTIMATE FUSION</p>
-        <input type="text" id="id-input" class="input-box" placeholder="@DEIN_NAME">
-        <button class="btn-initiate" onclick="launch()">ZENTRALE STARTEN</button>
+        <div class="logo">OMNI ONE</div>
+        <input type="text" id="uname" class="gate-input" placeholder="@DEIN_NAME">
+        <button class="gate-btn" onclick="launch()">COMMUNITY BEITRETEN</button>
     </div>
 
     <div id="app" class="app-shell">
         <div class="story-bar">
             <div class="story" onclick="toggleLive()"><div style="width:100%;height:100%;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;"><i class="fas fa-plus"></i></div></div>
-            <div class="story"><img src="https://i.pravatar.cc/150?u=11"><div class="story-name">Live_Talk</div></div>
-            <div class="story"><img src="https://i.pravatar.cc/150?u=22"><div class="story-name">Sarah_Vibe</div></div>
-            <div class="story"><img src="https://i.pravatar.cc/150?u=33"><div class="story-name">Neo_X</div></div>
+            <div class="story"><img src="https://i.pravatar.cc/150?u=1"><div class="story-name">Lukas_Live</div></div>
+            <div class="story"><img src="https://i.pravatar.cc/150?u=2"><div class="story-name">Community_X</div></div>
+            <div class="story"><img src="https://i.pravatar.cc/150?u=3"><div class="story-name">Vibe_Check</div></div>
         </div>
 
         <div class="feed">
             <div class="v-card">
-                <video src="https://www.w3schools.com/html/mov_bbb.mp4" id="main-video" loop muted autoplay playsinline></video>
-                <div class="side-ui">
-                    <div class="ui-item" onclick="this.classList.toggle('active')"><i class="fas fa-bolt"></i></div>
-                    <div class="ui-item"><i class="fas fa-comment-dots"></i></div>
-                    <div class="ui-item"><i class="fas fa-share-nodes"></i></div>
+                <video src="https://www.w3schools.com/html/mov_bbb.mp4" id="v-player" loop muted autoplay playsinline></video>
+                
+                <div id="community-chat">
+                    <div class="chat-msg"><b>Lukas:</b> Wer ist noch live? 🔥</div>
+                    <div class="chat-msg"><b>System:</b> Willkommen in der Community!</div>
                 </div>
-                <div style="position:absolute; bottom:115px; left:20px; width:75%;">
-                    <h3 id="user-tag" style="margin:0; font-size:20px;">@User</h3>
-                    <p style="opacity:0.8; font-size:14px; margin-top:5px;">Willkommen in der Zukunft. Alles in einer App. #omniverse #fusion</p>
+
+                <div class="sidebar">
+                    <div class="s-btn" onclick="this.style.color='red'"><i class="fas fa-bolt"></i></div>
+                    <div class="s-btn" onclick="sendMsg()"><i class="fas fa-comment-dots"></i></div>
+                    <div class="s-btn"><i class="fas fa-share-nodes"></i></div>
+                </div>
+                
+                <div style="position:absolute; bottom:120px; left:15px; width:70%;">
+                    <h3 id="u-display" style="margin:0; font-size:20px;">@User</h3>
+                    <p style="opacity:0.8; font-size:14px; margin-top:5px;">OMNI-ONE: Die erste App für echtes Community-Feeling. Live & Together. 🚀</p>
                 </div>
             </div>
         </div>
 
         <div id="holo">
-            <video id="live" autoplay playsinline></video>
+            <video id="webcam" autoplay playsinline></video>
         </div>
 
         <div class="nav">
             <i class="fas fa-house active"></i>
-            <i class="fas fa-magnifying-glass"></i>
-            <div class="plus" onclick="toggleLive()">+</div>
-            <i class="fas fa-play-circle"></i>
+            <i class="fas fa-users"></i>
+            <div class="plus-btn" onclick="toggleLive()">+</div>
+            <i class="fas fa-message" onclick="sendMsg()"></i>
             <i class="fas fa-user-astronaut"></i>
         </div>
     </div>
 
     <script>
         function launch() {
-            const name = document.getElementById('id-input').value;
+            const name = document.getElementById('uname').value;
             if(name.length > 1) {
-                document.getElementById('user-tag').innerText = "@" + name;
+                document.getElementById('u-display').innerText = "@" + name;
                 const gate = document.getElementById('gate');
                 gate.style.transform = 'translateY(-100%)';
                 setTimeout(() => {
@@ -109,20 +118,30 @@
             }
         }
 
-        let isLive = false;
-        async function toggleLive() {
-            const h = document.getElementById('holo');
-            if(!isLive) {
-                try {
-                    const s = await navigator.mediaDevices.getUserMedia({video: {facingMode: "user"}});
-                    document.getElementById('live').srcObject = s;
-                    h.style.display = 'block';
-                    isLive = true;
-                } catch(e) { alert("Cam Error"); }
-            } else { h.style.display = 'none'; isLive = false; }
+        function sendMsg() {
+            const chat = document.getElementById('community-chat');
+            const msg = document.createElement('div');
+            msg.className = 'chat-msg';
+            const user = document.getElementById('u-display').innerText;
+            msg.innerHTML = `<b>${user}:</b> Hallo Community! 🚀`;
+            chat.appendChild(msg);
+            chat.scrollTop = chat.scrollHeight;
         }
 
-        document.body.addEventListener('touchstart', () => { document.getElementById('main-video').muted = false; }, {once: true});
+        let live = false;
+        async function toggleLive() {
+            const h = document.getElementById('holo');
+            if(!live) {
+                try {
+                    const s = await navigator.mediaDevices.getUserMedia({video: {facingMode: "user"}});
+                    document.getElementById('webcam').srcObject = s;
+                    h.style.display = 'block';
+                    live = true;
+                } catch(e) { alert("Cam Error"); }
+            } else { h.style.display = 'none'; live = false; }
+        }
+
+        document.body.addEventListener('touchstart', () => { document.getElementById('v-player').muted = false; }, {once: true});
     </script>
 </body>
 </html>
