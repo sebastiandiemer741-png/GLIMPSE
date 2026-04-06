@@ -2,109 +2,70 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE V34 | OMNI-STABLE</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>GLIMPSE V36</title>
     <style>
-        :root { --neon: #00f2ea; --magenta: #ff00ff; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        body, html { height: 100%; background: #000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: white; overflow: hidden; }
-
-        /* --- BACKGROUND LAYER --- */
-        #v-live { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); background: #050505; }
-
-        /* --- SYSTEM GATE (START) --- */
-        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .gate-content { width: 80%; }
-        .gate-btn { width: 100%; max-width: 300px; padding: 22px; border-radius: 40px; border: none; background: var(--neon); color: black; font-weight: 900; font-size: 18px; margin-top: 30px; box-shadow: 0 0 30px rgba(0, 242, 234, 0.4); text-transform: uppercase; letter-spacing: 2px; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #00f2ea; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
         
-        /* --- APP UI --- */
-        #app { display: none; position: relative; z-index: 100; height: 100%; }
-        .sidebar { position: absolute; right: 20px; bottom: 150px; display: flex; flex-direction: column; gap: 20px; }
-        .s-node { width: 60px; height: 60px; background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); border-radius: 20px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2); font-size: 24px; }
+        /* Kamera Hintergrund */
+        #v { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); display: none; }
         
-        .dock { position: fixed; bottom: 30px; left: 5%; width: 90%; height: 75px; background: rgba(0,0,0,0.85); backdrop-filter: blur(30px); border-radius: 35px; border: 1px solid #333; display: flex; justify-content: space-around; align-items: center; }
-        .plus { width: 65px; height: 65px; background: #fff; color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; transform: translateY(-15px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        /* Benutzeroberfläche */
+        #ui { position: relative; z-index: 10; text-align: center; width: 100%; }
+        
+        .btn { background: #00f2ea; color: #000; border: none; padding: 20px 40px; border-radius: 50px; font-weight: bold; font-size: 18px; text-transform: uppercase; box-shadow: 0 0 20px #00f2ea; cursor: pointer; }
+        
+        .dock { position: fixed; bottom: 30px; width: 90%; height: 70px; background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); border-radius: 35px; display: none; align-items: center; justify-content: space-around; z-index: 20; border: 1px solid rgba(0,242,234,0.3); }
+        
+        .plus { width: 60px; height: 60px; background: white; color: black; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; transform: translateY(-15px); }
+        
+        #msg { color: white; font-size: 12px; margin-top: 20px; opacity: 0.5; }
     </style>
 </head>
 <body>
 
-    <video id="v-live" autoplay playsinline muted></video>
+    <video id="v" autoplay playsinline muted></video>
 
-    <div id="gate">
-        <div class="gate-content">
-            <h1 style="font-size: 40px; letter-spacing: 10px; margin-bottom: 10px;">GLIMPSE</h1>
-            <p style="opacity:0.5;">OMNIVERSE OS V34</p>
-            <button class="gate-btn" onclick="bootSystem()">SYNC & START</button>
-            <p id="debug" style="font-size: 10px; color: #444; margin-top: 20px;">System Ready</p>
-        </div>
+    <div id="ui">
+        <h1 id="title" style="letter-spacing: 10px; margin-bottom: 30px;">GLIMPSE</h1>
+        <button id="startBtn" class="btn" onclick="startApp()">SYNC START</button>
+        <p id="msg">V36 | OMNIVERSE READY</p>
     </div>
 
-    <div id="app">
-        <div style="position:fixed; top:60px; left:20px; background:rgba(0,0,0,0.6); padding:10px 20px; border-radius:25px; border:1px solid var(--neon); color:var(--neon); font-weight:900;">
-            <i class="fas fa-bolt"></i> 7.500 GP
-        </div>
-
-        <div class="sidebar">
-            <div class="s-node" onclick="alert('Match wird gesucht...')"><i class="fas fa-swords" style="color:var(--magenta)"></i></div>
-            <div class="s-node" onclick="location.reload()"><i class="fas fa-rotate-right"></i></div>
-            <div class="s-node" onclick="alert('G-Power Mining aktiv!')"><i class="fas fa-heart" style="color:#ff4b2b"></i></div>
-        </div>
-
-        <div class="dock">
-            <i class="fas fa-house" style="color:var(--neon)"></i>
-            <i class="fas fa-magnifying-glass"></i>
-            <label for="file-up" class="plus"><i class="fas fa-plus"></i></label>
-            <input type="file" id="file-up" accept="video/*" style="display:none" onchange="alert('Video bereit!')">
-            <i class="fas fa-paper-plane"></i>
-            <i class="fas fa-user"></i>
-        </div>
+    <div id="dock" class="dock">
+        <span style="font-size:24px">🏠</span>
+        <label for="up" class="plus">+</label>
+        <input type="file" id="up" accept="video/*" style="display:none" onchange="alert('Video bereit!')">
+        <span style="font-size:24px" onclick="location.reload()">🔄</span>
     </div>
 
     <script>
-        async function bootSystem() {
-            const video = document.getElementById('v-live');
-            const debug = document.getElementById('debug');
-            
-            debug.innerText = "Requesting Camera...";
-            
-            try {
-                // ERZWINGE KAMERA-ZUGRIFF
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "user" }, 
-                    audio: false 
-                });
-                
-                video.srcObject = stream;
-                
-                // Sobald Daten kommen, schalte UI frei
-                video.onloadedmetadata = () => {
-                    video.play();
-                    document.getElementById('gate').style.display = 'none';
-                    document.getElementById('app').style.display = 'block';
-                    if(navigator.vibrate) navigator.vibrate([50, 30, 50]);
-                };
+        async function startApp() {
+            const video = document.getElementById('v');
+            const ui = document.getElementById('ui');
+            const dock = document.getElementById('dock');
+            const startBtn = document.getElementById('startBtn');
 
-            } catch (err) {
-                debug.style.color = "red";
-                debug.innerText = "Fehler: Kamera-Berechtigung fehlt! \nGehe zu Einstellungen > Safari > Kamera > Erlauben.";
-                console.error(err);
+            try {
+                // Kamera aktivieren
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                video.srcObject = stream;
+                video.style.display = "block";
                 
-                // NOTFALL-MODUS: Zeige App ohne Kamera
-                setTimeout(() => {
-                   if(confirm("Kamera blockiert. App im Demo-Modus starten?")) {
-                       document.getElementById('gate').style.display = 'none';
-                       document.getElementById('app').style.display = 'block';
-                   }
-                }, 1000);
+                // UI umschalten
+                startBtn.style.display = "none";
+                document.getElementById('title').style.display = "none";
+                document.getElementById('msg').style.display = "none";
+                dock.style.display = "flex";
+                
+                if(navigator.vibrate) navigator.vibrate(50);
+            } catch (e) {
+                alert("Kamera-Fehler! Bitte in Einstellungen -> Safari -> Kamera erlauben.");
+                // Trotzdem Dock zeigen für Demo
+                dock.style.display = "flex";
+                startBtn.style.display = "none";
             }
         }
-
-        // Apple Sound/Haptic Fix
-        document.body.addEventListener('touchstart', () => { 
-            const v = document.getElementById('v-live');
-            if(v.srcObject) v.muted = false; 
-        }, {once: true});
     </script>
 </body>
 </html>
