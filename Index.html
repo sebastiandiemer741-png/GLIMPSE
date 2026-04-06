@@ -3,132 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE OMNIVERSE OS</title>
+    <title>GLIMPSE V21 | QUANTUM FX</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { 
-            --neon: #00f2ea; --magenta: #ff00ff; --glass: rgba(255,255,255,0.08); 
-            --ai-gradient: linear-gradient(135deg, #00f2ea, #7000ff, #ff00ff);
+            --neon: #00f2ea; --magenta: #ff00ff; --gold: #ffd700; --fx-blue: #007bff;
+            --glass: rgba(255,255,255,0.1); 
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { margin: 0; padding: 0; height: 100%; background: #000; font-family: 'Inter', sans-serif; color: white; overflow: hidden; }
 
-        /* --- NEURAL BOOTUP --- */
-        #boot { position: fixed; inset: 0; background: #000; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 1s cubic-bezier(0.9,0,0.1,1); }
-        .ai-orb { width: 150px; height: 150px; background: var(--ai-gradient); border-radius: 50%; filter: blur(20px); animation: pulse 3s infinite alternate; }
-        .boot-input { width: 80%; background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 22px; border-radius: 30px; color: white; text-align: center; margin-top: -100px; z-index: 2; font-size: 18px; }
-        .boot-btn { width: 80%; margin-top: 20px; padding: 20px; border-radius: 30px; border: none; background: white; color: black; font-weight: 900; letter-spacing: 2px; z-index: 2; }
-        @keyframes pulse { from { transform: scale(1); opacity: 0.5; } to { transform: scale(1.2); opacity: 0.8; } }
+        /* --- FX CANVAS (DIE NEUHEIT) --- */
+        #fx-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 9000; }
 
-        /* --- NAVIGATION 7.0 (THE FLOATING DOCK) --- */
-        .dock { position: fixed; bottom: 30px; left: 5%; width: 90%; height: 75px; background: rgba(10,10,10,0.7); backdrop-filter: blur(40px); border-radius: 35px; border: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-around; align-items: center; z-index: 10000; transition: 0.5s; }
-        .dock i { font-size: 24px; color: rgba(255,255,255,0.3); transition: 0.4s; }
-        .dock i.active { color: var(--neon); text-shadow: 0 0 15px var(--neon); }
-        .center-btn { width: 65px; height: 65px; background: white; color: black; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; transform: translateY(-20px); box-shadow: 0 15px 35px rgba(0,0,0,0.8); }
+        /* --- SYSTEM GATE --- */
+        #gate { position: fixed; inset: 0; background: #000; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 1s; }
+        .fx-core { width: 100px; height: 100px; background: var(--neon); filter: blur(30px); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.5); opacity: 1; } }
+        .gate-input { width: 80%; background: #111; border: 1px solid #333; padding: 20px; border-radius: 25px; color: white; text-align: center; margin-top: 40px; }
+        .gate-btn { width: 80%; margin-top: 20px; padding: 20px; border-radius: 25px; border: none; background: white; color: black; font-weight: 900; }
 
-        /* --- THE DYNAMIC CONTENT HUB --- */
-        .app-shell { display: none; height: 100%; position: relative; }
-        
-        /* TOP INTERFACE (NOTES & BROADCAST) */
-        .top-deck { position: fixed; top: 50px; width: 100%; z-index: 5000; padding: 0 15px; }
-        .notes-bar { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding: 10px 0; }
-        .note { background: var(--glass); backdrop-filter: blur(20px); padding: 8px 15px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); font-size: 12px; white-space: nowrap; }
-        
-        /* REELS & VIDEO FEED */
-        .feed { height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
-        .v-card { height: 100vh; width: 100vw; scroll-snap-align: start; position: relative; }
-        video { width: 100%; height: 100%; object-fit: cover; }
+        /* --- MAIN APP --- */
+        .app { display: none; height: 100%; position: relative; }
+        .stream-view { height: 100vh; position: relative; overflow: hidden; }
+        video { width: 100%; height: 100%; object-fit: cover; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
-        /* SIDE ACTIONS (SHOP, AI, SOCIAL) */
-        .side-actions { position: absolute; right: 15px; bottom: 130px; display: flex; flex-direction: column; gap: 22px; z-index: 4000; }
-        .s-tool { width: 58px; height: 58px; background: var(--glass); backdrop-filter: blur(20px); border-radius: 18px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); position: relative; }
-        .s-tool span { position: absolute; bottom: -18px; font-size: 10px; opacity: 0.7; }
+        /* MODERATOR FX-PANEL */
+        #fx-panel { position: fixed; bottom: 120px; left: 15px; width: 300px; background: rgba(0,0,0,0.8); backdrop-filter: blur(25px); border-radius: 30px; border: 1px solid var(--neon); padding: 20px; display: none; z-index: 8500; }
+        .fx-btn { width: 45%; background: var(--glass); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 12px; border-radius: 15px; font-size: 10px; margin: 5px; cursor: pointer; font-weight: 800; }
+        .fx-btn:active { background: var(--neon); color: black; }
 
-        /* --- THE WORLD FIRST: SPATIAL MAP OVERLAY --- */
-        #omni-map { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9000; display: none; padding-top: 100px; text-align: center; }
-        .map-node { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--neon); position: absolute; box-shadow: 0 0 20px var(--neon); animation: float 4s infinite; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        /* SIDEBAR */
+        .sidebar { position: absolute; right: 15px; bottom: 130px; display: flex; flex-direction: column; gap: 20px; z-index: 4000; }
+        .s-tool { width: 60px; height: 60px; background: var(--glass); backdrop-filter: blur(20px); border-radius: 20px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
+        .mod-active { border-color: var(--neon); color: var(--neon); box-shadow: 0 0 15px var(--neon); }
 
-        /* AI ASSISTANT */
-        .ai-btn { position: absolute; left: 15px; bottom: 130px; width: 50px; height: 50px; background: var(--ai-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(112,0,255,0.5); z-index: 4000; }
-
+        /* G-POWER DISPLAY */
+        .gp-display { position: fixed; top: 50px; left: 20px; background: rgba(0,0,0,0.7); padding: 10px 20px; border-radius: 25px; border: 1.5px solid var(--gold); z-index: 5000; color: var(--gold); font-weight: 900; font-size: 14px; }
     </style>
 </head>
 <body>
 
-    <div id="boot">
-        <div class="ai-orb"></div>
-        <input type="text" id="omni-id" class="boot-input" placeholder="NEURAL IDENTITY @">
-        <button class="boot-btn" onclick="startOmniverse()">INITIALISIEREN</button>
+    <canvas id="fx-canvas"></canvas>
+
+    <div id="gate">
+        <div class="fx-core"></div>
+        <input type="text" id="user-id" class="gate-input" placeholder="@DEINE_IDENTITY">
+        <button class="gate-btn" onclick="startFXApp()">FX-SYSTEM BOOTEN</button>
     </div>
 
-    <div id="app" class="app-shell">
-        <div class="top-deck">
-            <div class="notes-bar">
-                <div class="note">🎵 Listening: Technosis</div>
-                <div class="note">📍 Berlin: Live at Space</div>
-                <div class="note">💬 Note: Wer ist im Squad?</div>
+    <div id="app" class="app">
+        <div class="gp-display"><i class="fas fa-bolt"></i> <span id="gp-val">750</span> GP</div>
+
+        <div class="stream-view">
+            <video src="https://www.w3schools.com/html/mov_bbb.mp4" id="v-main" loop muted autoplay playsinline></video>
+            
+            <div id="fx-panel">
+                <h4 style="margin:0 0 15px 0; color:var(--neon); font-size:12px; letter-spacing:2px;">QUANTUM MOD PANEL</h4>
+                <button class="fx-btn" onclick="triggerFX('fireworks')">🎆 FIREWORKS</button>
+                <button class="fx-btn" onclick="triggerFX('matrix')">💻 MATRIX MODE</button>
+                <button class="fx-btn" onclick="triggerFX('shake')">🫨 SCREEN SHAKE</button>
+                <button class="fx-btn" onclick="triggerFX('morph')">🌀 MORPH VIDEO</button>
+            </div>
+
+            <div class="sidebar">
+                <div class="s-tool mod-active" onclick="toggleFXPanel()"><i class="fas fa-wand-sparkles"></i></div>
+                <div class="s-tool" onclick="addGP()"><i class="fas fa-heart"></i></div>
+                <div class="s-tool"><i class="fas fa-bolt-lightning" style="color:var(--gold)"></i></div>
+                <div class="s-tool"><i class="fas fa-share-nodes"></i></div>
+            </div>
+
+            <div style="position:absolute; bottom:120px; left:20px; width:70%; text-shadow: 2px 2px 10px black;">
+                <h3 id="display-name" style="margin:0; font-size:24px; color:var(--neon);">@User</h3>
+                <p style="opacity:0.9; font-size:14px; margin-top:5px;">V21: Quantum FX Engine. Mods können jetzt den Stream manipulieren! 🌀✨</p>
             </div>
         </div>
 
-        <div class="feed" id="main-feed">
-            <div class="v-card">
-                <video src="https://www.w3schools.com/html/mov_bbb.mp4" id="v-main" loop muted autoplay playsinline></video>
-                
-                <div class="ai-btn" onclick="alert('AI: Ich erstelle dir gerade ein Reel-Konzept!')"><i class="fas fa-wand-magic-sparkles"></i></div>
-
-                <div class="side-actions">
-                    <div class="s-tool" onclick="haptic()"><i class="fas fa-bolt" style="color:var(--neon)"></i><span>2.4M</span></div>
-                    <div class="s-tool"><i class="fas fa-comment"></i><span>12k</span></div>
-                    <div class="s-tool" onclick="alert('Shop öffnet... 15% Rabatt für dich!')"><i class="fas fa-bag-shopping" style="color:var(--magenta)"></i><span>SHOP</span></div>
-                    <div class="s-tool"><i class="fas fa-share-nodes"></i><span>SHARE</span></div>
-                </div>
-
-                <div style="position:absolute; bottom:120px; left:20px; width:70%;">
-                    <h3 id="u-display" style="margin:0; font-size:24px; color:var(--neon);">@Omniverse</h3>
-                    <p style="opacity:0.8; font-size:14px; margin-top:5px;">V17: Die erste KI-gesteuerte Super-App. Alles in einem Loop. #worldfirst</p>
-                </div>
-            </div>
-        </div>
-
-        <div id="omni-map">
-            <h2>OMNI MAP LIVE</h2>
-            <div class="map-node" style="top:250px; left:50px;"><img src="https://i.pravatar.cc/150?u=1" style="width:100%; border-radius:50%;"></div>
-            <div class="map-node" style="top:400px; right:50px;"><img src="https://i.pravatar.cc/150?u=2" style="width:100%; border-radius:50%;"></div>
-            <p style="margin-top:450px;">Tippe auf einen Freund, um direkt in seinen Live-Room zu springen.</p>
-            <button onclick="toggleMap()" style="background:white; color:black; border:none; padding:15px 30px; border-radius:20px; font-weight:900; margin-top:20px;">ZURÜCK ZUM FEED</button>
-        </div>
-
-        <div class="dock">
-            <i class="fas fa-layer-group active" onclick="location.reload()"></i>
-            <i class="fas fa-map-location-dot" onclick="toggleMap()"></i>
-            <div class="center-btn" onclick="alert('Live Studio startet...')">+</div>
-            <i class="fas fa-message"></i>
-            <i class="fas fa-chart-line" onclick="alert('Business Dashboard: +45% Reichweite diese Woche!')"></i>
+        <div style="position:fixed; bottom:25px; left:5%; width:90%; height:75px; background:rgba(10,10,10,0.9); border-radius:35px; display:flex; justify-content:space-around; align-items:center; border:1px solid #222; z-index:10000;">
+            <i class="fas fa-house active" style="font-size:22px; color:white;"></i>
+            <i class="fas fa-compass" style="font-size:22px; color:#444;"></i>
+            <div style="width:60px; height:60px; background:white; color:black; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; transform:translateY(-15px);">+</div>
+            <i class="fas fa-paper-plane" style="font-size:22px; color:#444;"></i>
+            <i class="fas fa-user-astronaut" style="font-size:22px; color:#444;"></i>
         </div>
     </div>
 
     <script>
-        function startOmniverse() {
-            const name = document.getElementById('omni-id').value;
+        let gp = 750;
+        const canvas = document.getElementById('fx-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        function startFXApp() {
+            const name = document.getElementById('user-id').value;
             if(name.length > 1) {
-                document.getElementById('u-display').innerText = "@" + name;
-                const boot = document.getElementById('boot');
-                boot.style.transform = 'scale(5)';
-                boot.style.opacity = '0';
-                setTimeout(() => {
-                    boot.style.display = 'none';
-                    document.getElementById('app').style.display = 'block';
-                }, 800);
+                document.getElementById('display-name').innerText = "@" + name;
+                document.getElementById('gate').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
             }
         }
 
-        function toggleMap() {
-            const m = document.getElementById('omni-map');
-            m.style.display = (m.style.display === 'block') ? 'none' : 'block';
+        function toggleFXPanel() {
+            const p = document.getElementById('fx-panel');
+            p.style.display = (p.style.display === 'block') ? 'none' : 'block';
         }
 
-        function haptic() { if(navigator.vibrate) navigator.vibrate(50); }
+        function triggerFX(type) {
+            const v = document.getElementById('v-main');
+            if(type === 'shake') {
+                v.style.transform = "scale(1.1) rotate(5deg)";
+                setTimeout(() => v.style.transform = "scale(1)", 500);
+            }
+            if(type === 'morph') {
+                v.style.filter = "hue-rotate(180deg) invert(1)";
+                setTimeout(() => v.style.filter = "none", 2000);
+            }
+            if(type === 'fireworks') {
+                createParticles();
+            }
+            if(navigator.vibrate) navigator.vibrate([50, 30, 50]);
+        }
+
+        function createParticles() {
+            const particles = [];
+            for(let i=0; i<50; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: canvas.height,
+                    speed: Math.random() * 15 + 5,
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)`
+                });
+            }
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.y -= p.speed;
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                if(particles[0].y > -50) requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        function addGP() {
+            gp += 10;
+            document.getElementById('gp-val').innerText = gp;
+            if(navigator.vibrate) navigator.vibrate(20);
+        }
+
         document.body.addEventListener('touchstart', () => { document.getElementById('v-main').muted = false; }, {once: true});
     </script>
 </body>
