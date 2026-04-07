@@ -3,168 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE V58 | TOTAL LIVE</title>
+    <title>GLIMPSE V59 | REAL CHAT</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --tt-red: #ff0050; --tt-cyan: #00f2ea; --gold: #ffd700; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        body, html { height: 100%; background: #000; font-family: -apple-system, sans-serif; color: white; overflow: hidden; }
+        body, html { height: 100%; background: #000; font-family: -apple-system, sans-serif; color: white; overflow: hidden; position: fixed; width: 100%; }
 
-        /* --- VIDEO & FX LAYER --- */
+        /* --- VIDEO LAYER --- */
         #v { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); }
         #heart-container { position: fixed; inset: 0; z-index: 200; pointer-events: none; }
 
-        /* --- HUD INTERFACE --- */
+        /* --- HUD --- */
         .hud { position: relative; z-index: 100; height: 100%; display: none; flex-direction: column; padding: 50px 15px 20px; }
 
-        /* HEADER: CREATOR & SPECTATORS */
-        .header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .creator-info { background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 25px; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(15px); border: 0.5px solid rgba(255,255,255,0.2); }
-        .spec-list { display: flex; align-items: center; gap: 4px; }
-        .spec-avatar { width: 26px; height: 26px; border-radius: 50%; border: 1px solid white; background: #333; object-fit: cover; }
+        /* CHAT SYSTEM - REPARIERT */
+        #chat-zone { position: absolute; bottom: 90px; left: 15px; width: 75%; height: 200px; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; pointer-events: none; }
+        .msg { background: rgba(0,0,0,0.3); backdrop-filter: blur(5px); padding: 6px 12px; border-radius: 12px; font-size: 13px; margin-bottom: 5px; animation: slideIn 0.2s ease; width: fit-content; pointer-events: auto; }
+        .msg b { color: var(--tt-cyan); margin-right: 5px; }
+        .msg.me { border-left: 3px solid var(--tt-red); background: rgba(255,0,80,0.2); }
 
-        /* LIVE GOAL BAR */
-        .goal-box { position: absolute; top: 100px; left: 15px; width: 120px; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 8px; border: 0.5px solid rgba(255,255,255,0.1); }
-        .bar-bg { height: 4px; background: #222; border-radius: 2px; margin-top: 4px; overflow: hidden; }
-        .bar-fill { width: 45%; height: 100%; background: linear-gradient(90deg, var(--tt-cyan), var(--tt-red)); box-shadow: 0 0 10px var(--tt-red); }
+        /* INPUT DOCK - ECHTE FUNKTION */
+        .dock { position: fixed; bottom: 0; width: 100%; height: 70px; display: flex; align-items: center; padding: 0 15px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); z-index: 300; }
+        #user-input { flex: 1; background: rgba(255,255,255,0.2); border: none; padding: 12px 18px; border-radius: 25px; font-size: 14px; color: white; outline: none; }
+        .send-btn { margin-left: 15px; font-size: 24px; color: var(--tt-cyan); }
 
-        /* CHAT SYSTEM */
-        .chat-zone { position: absolute; bottom: 90px; left: 15px; width: 75%; height: 240px; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; mask-image: linear-gradient(to top, black 80%, transparent); }
-        .msg { background: rgba(0,0,0,0.25); padding: 5px 12px; border-radius: 12px; font-size: 14px; margin-bottom: 5px; animation: msgIn 0.2s ease; width: fit-content; }
-        .msg b { color: var(--tt-cyan); font-weight: 600; margin-right: 6px; }
-        .msg.join { color: #aaa; font-style: italic; font-size: 12px; }
+        /* UI ELEMENTS */
+        .sidebar { position: absolute; right: 10px; top: 150px; display: flex; flex-direction: column; gap: 15px; z-index: 250; }
+        .tool { width: 45px; height: 45px; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
-        /* GIFT POPUP */
-        #gift-anim { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0); z-index: 500; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; }
-        .gift-card { background: rgba(0,0,0,0.85); border: 2px solid var(--gold); padding: 25px; border-radius: 25px; text-align: center; box-shadow: 0 0 40px var(--gold); }
-
-        /* INTERACTION DOCK */
-        .dock { position: fixed; bottom: 0; width: 100%; height: 80px; display: flex; align-items: center; padding: 0 15px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); z-index: 300; }
-        .input-fake { flex: 1; background: rgba(255,255,255,0.15); padding: 12px 18px; border-radius: 25px; font-size: 14px; color: #ddd; }
-        .action-icon { font-size: 26px; margin-left: 18px; filter: drop-shadow(0 2px 5px black); }
-
-        /* ANIMATIONS */
-        @keyframes msgIn { from { opacity: 0; transform: translateX(-15px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes heartUp { 0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; } 100% { transform: translateY(-450px) scale(3) rotate(30deg); opacity: 0; } }
-
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-15px); } to { opacity: 1; transform: translateX(0); } }
         #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
-<body onclick="createHeart(event)">
+<body onclick="spawnHeart(event)">
 
     <video id="v" autoplay playsinline muted></video>
     <div id="heart-container"></div>
-    
-    <div id="gift-anim">
-        <div class="gift-card">
-            <i class="fas fa-crown" style="font-size: 60px; color: var(--gold); margin-bottom: 15px;"></i>
-            <h2 style="color:var(--gold); letter-spacing:2px;">LEGENDÄR!</h2>
-            <p id="gift-txt" style="font-size: 12px; opacity:0.8;">User_77 hat eine Krone gesendet</p>
-        </div>
-    </div>
 
     <div id="gate">
-        <div style="width:70px; height:70px; background:var(--tt-red); border-radius:20px; display:flex; align-items:center; justify-content:center; margin-bottom:20px;">
-            <i class="fas fa-play" style="font-size:30px;"></i>
-        </div>
-        <h1 style="letter-spacing:10px;">GLIMPSE LIVE</h1>
-        <button onclick="startFullLive()" style="background:white; color:black; border:none; padding:18px 60px; border-radius:35px; font-weight:900; margin-top:30px;">JETZT STARTEN</button>
+        <h1 style="letter-spacing: 10px; margin-bottom: 30px;">PRO LIVE V59</h1>
+        <button onclick="startApp()" style="background:var(--tt-red); color:white; border:none; padding:20px 60px; border-radius:40px; font-weight:900; font-size:18px;">JETZT LIVE GEHEN</button>
     </div>
 
     <div id="app" class="hud">
-        <div class="header">
-            <div class="creator-info">
-                <div style="width:30px; height:30px; background:var(--tt-cyan); border-radius:50%; border:1.5px solid white;"></div>
-                <div style="font-size:11px;"><b>Sovereign_Live</b><br><span style="color:var(--tt-cyan)">1.2M Likes</span></div>
-            </div>
-            <div class="spec-list">
-                <img src="https://i.pravatar.cc/100?u=1" class="spec-avatar">
-                <img src="https://i.pravatar.cc/100?u=2" class="spec-avatar">
-                <img src="https://i.pravatar.cc/100?u=3" class="spec-avatar">
-                <div style="background:rgba(0,0,0,0.5); padding:4px 8px; border-radius:10px; font-size:11px; margin-left:5px;">2.4k</div>
-            </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="background:rgba(0,0,0,0.5); padding:6px 12px; border-radius:20px; font-size:11px;"><b>Sovereign_Live</b> | 1.4k Zuschauer</div>
+            <div onclick="location.reload()" style="font-size:24px; padding:10px;"><i class="fas fa-times"></i></div>
         </div>
 
-        <div class="goal-box">
-            <div style="font-size:8px; font-weight:bold; display:flex; justify-content:space-between;">
-                <span>LIVE ZIEL</span>
-                <span>45%</span>
-            </div>
-            <div class="bar-bg"><div class="bar-fill"></div></div>
+        <div class="sidebar">
+            <div class="tool" onclick="triggerGift()"><i class="fas fa-gift" style="color:var(--gold)"></i></div>
+            <div class="tool"><i class="fas fa-share"></i></div>
         </div>
 
-        <div class="chat-zone" id="chat">
-            <div class="msg join">User_Kev ist dem Live beigetreten</div>
+        <div id="chat-zone">
+            <div class="msg"><b>System:</b> Chat aktiv. Sei freundlich! 🛡️</div>
         </div>
 
-        <div class="dock">
-            <div class="input-fake">Kommentieren...</div>
-            <div class="action-icon" onclick="triggerBigGift()"><i class="fas fa-gift" style="color:var(--gold)"></i></div>
-            <div class="action-icon" onclick="createHeart(event)"><i class="fas fa-heart" style="color:var(--tt-red)"></i></div>
-            <div class="action-icon"><i class="fas fa-share"></i></div>
-        </div>
+        <form class="dock" onsubmit="sendMessage(event)">
+            <input type="text" id="user-input" placeholder="Kommentieren..." autocomplete="off">
+            <button type="submit" class="send-btn" style="background:none; border:none;"><i class="fas fa-paper-plane"></i></button>
+        </form>
     </div>
 
     <script>
-        async function startFullLive() {
+        async function startApp() {
             try {
                 const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 document.getElementById('v').srcObject = s;
                 document.getElementById('gate').style.display = 'none';
                 document.getElementById('app').style.display = 'flex';
-                runLiveEngine();
-            } catch (e) { alert("Cam-Zugriff benötigt!"); }
+                runBotChat();
+            } catch (e) { alert("Cam-Fehler."); }
         }
 
-        function createHeart(e) {
-            if(document.getElementById('app').style.display !== 'flex') return;
-            const colors = ['#ff0050', '#00f2ea', '#ffd700', '#ffffff', '#ff66aa'];
+        // EIGENE NACHRICHT SENDEN
+        function sendMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('user-input');
+            const text = input.value.trim();
+            
+            if(text !== "") {
+                const chat = document.getElementById('chat-zone');
+                const m = document.createElement('div');
+                m.className = 'msg me';
+                m.innerHTML = `<b>Du:</b> ${text}`;
+                chat.appendChild(m);
+                input.value = "";
+                input.blur(); // Tastatur schließen
+                
+                if(chat.children.length > 6) chat.removeChild(chat.firstChild);
+                if(navigator.vibrate) navigator.vibrate(10);
+            }
+        }
+
+        // BOT CHAT SIMULATION
+        function runBotChat() {
+            const users = ["Rico", "Sarah", "Max", "Lia", "Kev"];
+            const words = ["Mega Stream!", "G-Power geschickt ⚡", "Hammer!", "Hi aus Berlin!", "💎💎💎"];
+            setInterval(() => {
+                const chat = document.getElementById('chat-zone');
+                const m = document.createElement('div');
+                m.className = 'msg';
+                m.innerHTML = `<b>${users[Math.floor(Math.random()*5)]}</b> ${words[Math.floor(Math.random()*5)]}`;
+                chat.appendChild(m);
+                if(chat.children.length > 6) chat.removeChild(chat.firstChild);
+            }, 3000);
+        }
+
+        function spawnHeart(e) {
+            if(document.getElementById('app').style.display !== 'flex' || e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
             const container = document.getElementById('heart-container');
             const heart = document.createElement('div');
-            
             heart.innerHTML = '<i class="fas fa-heart"></i>';
             heart.style.position = 'absolute';
-            // Startet entweder an der Klick-Position oder unten rechts am Herz-Icon
-            heart.style.left = (e.clientX || (window.innerWidth - 50)) + (Math.random()*40-20) + 'px';
-            heart.style.top = (e.clientY || (window.innerHeight - 80)) + 'px';
-            heart.style.color = colors[Math.floor(Math.random() * colors.length)];
-            heart.style.fontSize = (Math.random() * 15 + 20) + 'px';
-            heart.style.animation = `heartUp ${Math.random() * 0.5 + 1}s ease-out forwards`;
-            
+            heart.style.left = e.clientX + 'px';
+            heart.style.top = e.clientY + 'px';
+            heart.style.color = "#ff0050";
+            heart.style.fontSize = "24px";
+            heart.style.animation = "slideUp 1s ease-out forwards";
             container.appendChild(heart);
-            if(navigator.vibrate) navigator.vibrate(15);
-            setTimeout(() => heart.remove(), 1500);
+            setTimeout(() => heart.remove(), 1000);
         }
 
-        function triggerBigGift() {
-            const overlay = document.getElementById('gift-anim');
-            overlay.style.transform = 'translate(-50%, -50%) scale(1)';
-            if(navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
-            setTimeout(() => { overlay.style.transform = 'translate(-50%, -50%) scale(0)'; }, 3000);
-        }
-
-        function runLiveEngine() {
-            const users = ["Rico", "Sarah", "Max", "Lia", "Justin", "Elena", "Tox", "Basti"];
-            const words = ["Krass!", "Tippt den Screen Leute! ❤️", "G-Power geschickt ⚡", "Hi aus Berlin!", "💎💎💎", "Was für ein Vibe!", "Teilt den Stream!"];
-            
-            setInterval(() => {
-                const chat = document.getElementById('chat');
-                const m = document.createElement('div');
-                
-                if(Math.random() > 0.8) {
-                    m.className = 'msg join';
-                    m.innerHTML = `${users[Math.floor(Math.random()*users.length)]} ist beigetreten`;
-                } else {
-                    m.className = 'msg';
-                    m.innerHTML = `<b>${users[Math.floor(Math.random()*users.length)]}</b> ${words[Math.floor(Math.random()*words.length)]}`;
-                }
-                
-                chat.appendChild(m);
-                if(chat.children.length > 8) chat.removeChild(chat.firstChild);
-                
-                // Automatische Herzen-Bots simulieren
-                if(Math.random() > 0.6) createHeart({});
-            }, 1800);
+        function triggerGift() {
+            alert("Geschenk erhalten! 💎 +500 G-Power");
+            if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
         }
     </script>
 </body>
