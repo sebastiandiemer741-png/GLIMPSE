@@ -3,146 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE V68 | OMNIPOTENCE</title>
+    <title>GLIMPSE V70 | SUPREMACY</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --tt-red: #ff0050; --tt-cyan: #00f2ea; --gold: #ffd700; --mod: #007aff; --truth: #00ff88; --purple: #a020f0; }
+        :root { --tt-pink: #ff0050; --tt-cyan: #00f2ea; --gold: #ffd700; --mod: #007aff; --truth: #00ff88; --pk-red: #ff2d55; --pk-blue: #007aff; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         body, html { height: 100%; background: #000; font-family: -apple-system, sans-serif; color: white; overflow: hidden; position: fixed; width: 100%; }
 
-        /* --- ADVANCED VIDEO ENGINE --- */
-        #v { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); transition: 0.5s filter; }
+        /* --- VIDEO & PK ENGINE --- */
+        #v { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); transition: 0.4s; }
         .thermal { filter: contrast(2) saturate(3) hue-rotate(90deg) invert(1) !important; }
-        .shake { animation: shake 0.2s infinite; }
+        .pk-active #v { width: 50%; left: 0; border-right: 2px solid white; transform: scaleX(-1); }
+        #pk-enemy { position: fixed; top: 0; right: 0; width: 50%; height: 100%; background: #111; display: none; z-index: 1; }
+        #pk-enemy img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
 
-        /* --- MEDIA & AR LAYERS --- */
+        /* --- OVERLAYS --- */
         #fx-layer { position: fixed; inset: 0; z-index: 150; pointer-events: none; }
-        #media-pip { position: absolute; top: 130px; right: 75px; width: 110px; height: 160px; background: #111; border: 2px solid var(--tt-cyan); border-radius: 12px; display: none; z-index: 160; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        #media-pip { position: absolute; top: 140px; right: 60px; width: 90px; height: 130px; background: #000; border: 2px solid var(--tt-cyan); border-radius: 10px; display: none; z-index: 160; overflow: hidden; }
+        
+        /* PK BAR */
+        #pk-bar { position: absolute; top: 110px; left: 10%; width: 80%; height: 20px; background: #333; border-radius: 10px; display: none; z-index: 200; overflow: hidden; border: 1.5px solid white; }
+        #pk-b-fill { height: 100%; width: 50%; background: var(--pk-blue); float: left; transition: 0.5s; }
+        #pk-r-fill { height: 100%; width: 50%; background: var(--pk-red); float: left; transition: 0.5s; }
 
-        /* --- HUD & SENSORS --- */
+        /* GIFT COMBO */
+        #combo-wrap { position: absolute; left: 20px; top: 35%; z-index: 500; display: none; align-items: center; gap: 10px; animation: pop 0.3s cubic-bezier(0.17, 0.89, 0.32, 1.28); }
+        .combo-hex { width: 55px; height: 55px; background: linear-gradient(45deg, var(--gold), #ff8c00); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 0 20px var(--gold); }
+        
+        /* HUD */
         .hud { position: relative; z-index: 100; height: 100%; display: none; flex-direction: column; padding: 50px 15px 20px; }
-        .truth-wrap { margin-top: 15px; background: rgba(0,0,0,0.5); padding: 8px; border-radius: 12px; width: fit-content; border: 1px solid rgba(255,255,255,0.1); }
-        #truth-bar { width: 100px; height: 6px; background: #222; border-radius: 3px; overflow: hidden; margin-top: 4px; }
-        #truth-fill { height: 100%; width: 85%; background: var(--truth); transition: 1s; box-shadow: 0 0 15px var(--truth); }
+        .truth-box { margin-top: 10px; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 10px; width: fit-content; border: 1px solid var(--truth); }
+        #t-fill { height: 4px; width: 80%; background: var(--truth); margin-top: 4px; transition: 1s; box-shadow: 0 0 10px var(--truth); }
 
-        /* SIDEBAR PRO TOOLS */
-        .sidebar { position: absolute; right: 12px; top: 120px; display: flex; flex-direction: column; gap: 12px; z-index: 210; }
-        .s-btn { width: 50px; height: 50px; background: rgba(0,0,0,0.6); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(15px); transition: 0.3s; }
-        .s-btn.active { border-color: var(--tt-cyan); color: var(--tt-cyan); box-shadow: 0 0 15px var(--tt-cyan); }
+        /* SIDEBAR */
+        .sidebar { position: absolute; right: 10px; top: 140px; display: flex; flex-direction: column; gap: 12px; z-index: 210; }
+        .s-btn { width: 46px; height: 46px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); }
+        .s-btn.active { border-color: var(--tt-cyan); color: var(--tt-cyan); }
 
-        /* CONTROL PANELS */
-        #beauty-panel { position: absolute; bottom: 100px; right: 15px; background: rgba(0,0,0,0.9); padding: 15px; border-radius: 20px; display: none; z-index: 300; width: 160px; border: 1px solid var(--tt-cyan); }
+        /* PANELS */
+        #beauty-panel { position: absolute; bottom: 100px; right: 15px; background: rgba(0,0,0,0.85); padding: 15px; border-radius: 15px; display: none; z-index: 300; width: 140px; border: 1px solid var(--tt-cyan); }
 
-        /* CHAT SYSTEM */
-        #chat-zone { position: absolute; bottom: 90px; left: 15px; width: 75%; height: 230px; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; pointer-events: none; }
-        .msg { background: rgba(0,0,0,0.35); padding: 7px 12px; border-radius: 15px; font-size: 13px; margin-bottom: 6px; animation: slideIn 0.2s ease; width: fit-content; pointer-events: auto; display: flex; align-items: center; gap: 8px; border-left: 3px solid transparent; }
-        .msg.is-mod { border-left-color: var(--mod); background: rgba(0,122,255,0.1); }
+        /* CHAT */
+        #chat { position: absolute; bottom: 90px; left: 15px; width: 75%; height: 200px; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; pointer-events: none; }
+        .msg { background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 12px; font-size: 13px; margin-bottom: 5px; animation: slide 0.2s ease; width: fit-content; pointer-events: auto; }
         .msg b { color: var(--tt-cyan); }
-        .msg.is-mod b { color: var(--mod); }
 
-        /* DOCK */
-        .dock { position: fixed; bottom: 0; width: 100%; height: 85px; display: flex; align-items: center; padding: 0 15px; background: linear-gradient(transparent, rgba(0,0,0,0.95)); z-index: 300; }
-        #u-input { flex: 1; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.1); padding: 12px 18px; border-radius: 25px; color: white; font-size: 14px; outline: none; }
-
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes heartUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-450px) scale(3); opacity: 0; } }
-        @keyframes ghostA { 0% { transform: translateY(600px) scale(0.5); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(-250px) scale(2.5); opacity: 0; } }
-        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-2px, -2px); } 100% { transform: translate(1px, 1px); } }
-
-        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        @keyframes pop { from { transform: scale(0) rotate(-20deg); } to { transform: scale(1) rotate(0deg); } }
+        @keyframes slide { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes heartFly { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-450px) scale(3); opacity: 0; } }
+        
+        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body onclick="spawnHeart(event)">
 
     <video id="v" autoplay playsinline muted></video>
     <div id="fx-layer"></div>
-    <div id="media-pip"><img src="https://picsum.photos/300/500" style="width:100%; height:100%; object-fit:cover;"></div>
+    <div id="pk-enemy"><img src="https://picsum.photos/400/800?u=rival" alt="Rival"></div>
+    <div id="media-pip"><img src="https://picsum.photos/200/300" style="width:100%; height:100%; object-fit:cover;"></div>
+
+    <div id="pk-bar"><div id="pk-b-fill"></div><div id="pk-r-fill"></div></div>
+
+    <div id="combo-wrap">
+        <div class="combo-hex">💎</div>
+        <div style="font-size:35px; font-weight:900; font-style:italic;">x<span id="c-count">1</span></div>
+    </div>
 
     <div id="gate">
-        <div style="width:90px; height:90px; background:linear-gradient(135deg, var(--tt-red), var(--purple)); border-radius:25px; display:flex; align-items:center; justify-content:center; margin-bottom:25px; box-shadow: 0 0 40px var(--purple);">
-            <i class="fas fa-atom" style="font-size:45px; color:white;"></i>
+        <div style="width:80px; height:80px; background:linear-gradient(45deg, var(--tt-pink), var(--mod)); border-radius:25px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; box-shadow: 0 0 30px var(--tt-pink);">
+            <i class="fas fa-crown" style="font-size:40px;"></i>
         </div>
-        <h1 style="letter-spacing:12px; font-weight:900;">OMNIPOTENCE</h1>
-        <p style="opacity:0.6; margin-bottom:45px; letter-spacing:2px;">V68 | FINAL FUSION</p>
-        <button onclick="launchV68()" style="background:white; color:black; border:none; padding:22px 70px; border-radius:50px; font-weight:900; font-size:16px; box-shadow: 0 10px 20px rgba(255,255,255,0.2);">ACTIVATE ALL SYSTEMS</button>
+        <h1 style="letter-spacing:10px;">TITAN SUPREMACY</h1>
+        <button onclick="launchV70()" style="background:white; color:black; border:none; padding:18px 60px; border-radius:40px; font-weight:900; margin-top:30px;">GO LIVE</button>
     </div>
 
     <div id="app" class="hud">
-        <div class="header">
-            <div style="display:flex; flex-direction:column; gap:8px;">
-                <div style="background:rgba(0,0,0,0.6); padding:6px 15px; border-radius:25px; border:1px solid var(--tt-cyan); font-size:11px; width:fit-content;">
-                    <i class="fas fa-circle" style="color:red; font-size:8px; margin-right:5px;"></i> <b>LIVE</b> | 2.8k Viewers
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+                <div style="background:rgba(0,0,0,0.5); padding:5px 12px; border-radius:20px; display:flex; align-items:center; gap:8px;">
+                    <div style="width:25px; height:25px; background:var(--mod); border-radius:50%;"></div>
+                    <div style="font-size:10px;"><b>Sovereign_Live</b> <i class="fas fa-check-circle" style="color:var(--mod)"></i></div>
                 </div>
-                <div class="truth-wrap">
-                    <div style="font-size:8px; font-weight:bold; color:var(--truth); letter-spacing:1px;">AUTHENTIZITÄT</div>
-                    <div id="truth-bar"><div id="truth-fill"></div></div>
+                <div class="truth-box">
+                    <div style="font-size:7px; font-weight:bold; color:var(--truth);">AUTHENTIZITÄT</div>
+                    <div id="t-fill"></div>
                 </div>
             </div>
-            <div onclick="location.reload()" style="font-size:24px; background:rgba(0,0,0,0.5); padding:12px; border-radius:50%; border:1px solid rgba(255,255,255,0.2);"><i class="fas fa-power-off"></i></div>
+            <div onclick="location.reload()" style="font-size:22px; background:rgba(0,0,0,0.5); padding:10px; border-radius:50%;"><i class="fas fa-power-off"></i></div>
         </div>
 
         <div id="beauty-panel">
-            <p style="font-size:9px; margin-bottom:10px; color:var(--tt-cyan);">SKIN GLIDE: <span id="b-val">0</span>%</p>
+            <p style="font-size:9px; margin-bottom:8px;">BEAUTY: <span id="b-val">0</span>%</p>
             <input type="range" min="0" max="100" value="0" style="width:100%;" oninput="applyBeauty(this.value)">
         </div>
 
         <div class="sidebar">
-            <div class="s-btn" onclick="spawnGhostHand()"><i class="fas fa-hand-sparkles" style="color:var(--gold)"></i></div>
-            <div class="s-btn" id="t-btn" onclick="toggleThermal()"><i class="fas fa-eye"></i></div>
+            <div class="s-btn" onclick="togglePK()" id="pk-btn"><i class="fas fa-bolt"></i></div>
+            <div class="s-btn" onclick="triggerCombo()"><i class="fas fa-gift" style="color:var(--gold)"></i></div>
+            <div class="s-btn" onclick="spawnGhost()"><i class="fas fa-hand-sparkles"></i></div>
+            <div class="s-btn" onclick="toggleThermal()" id="th-btn"><i class="fas fa-eye"></i></div>
             <div class="s-btn" onclick="toggleMedia()"><i class="fas fa-clone"></i></div>
             <div class="s-btn" onclick="toggleBeauty()"><i class="fas fa-wand-magic-sparkles"></i></div>
-            <div class="s-btn" onclick="triggerShake()"><i class="fas fa-bolt"></i></div>
-            <div class="s-btn" onclick="alert('Moderator-Schilder aktiviert 🛡️')"><i class="fas fa-shield-halved" style="color:var(--mod)"></i></div>
         </div>
 
-        <div id="chat-zone"></div>
+        <div id="chat"></div>
 
-        <form class="dock" onsubmit="sendMyMessage(event)">
-            <input type="text" id="u-input" placeholder="Nachricht an Community..." autocomplete="off">
-            <button type="submit" style="background:none; border:none; color:var(--tt-cyan); margin-left:15px; font-size:24px;"><i class="fas fa-paper-plane"></i></button>
+        <form class="dock" onsubmit="sendChat(event)">
+            <input type="text" id="u-in" placeholder="Sag etwas..." autocomplete="off">
+            <button type="submit" style="background:none; border:none; color:var(--tt-cyan); margin-left:15px; font-size:22px;"><i class="fas fa-paper-plane"></i></button>
         </form>
     </div>
 
     <script>
-        let isThermal = false;
-        let isBeautyOpen = false;
+        let isPK = false, isThermal = false, combo = 0, pkScore = 50;
 
-        async function launchV68() {
+        async function launchV70() {
             try {
                 const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 document.getElementById('v').srcObject = s;
                 document.getElementById('gate').style.display = 'none';
                 document.getElementById('app').style.display = 'flex';
                 runEngines();
-            } catch (e) { alert("System-Initialisierung fehlgeschlagen."); }
+            } catch (e) { alert("Cam Error."); }
         }
 
         function runEngines() {
-            // Truth-O-Meter
+            setInterval(() => { document.getElementById('t-fill').style.width = Math.floor(Math.random() * 30 + 70) + "%"; }, 3000);
+            const users = ["Rico", "Sarah", "Guardian", "Tox", "Lia"];
+            const words = ["PK Win!", "Ghost Hand!", "🛡️ Clean Chat", "💎 G-Power!", "Mega Stream"];
             setInterval(() => {
-                document.getElementById('truth-fill').style.width = Math.floor(Math.random() * 25 + 75) + "%";
-            }, 3000);
-
-            // Dynamic Chat
-            const users = ["Rico", "Sarah", "Guardian_X", "Tox", "Lia", "Nexus"];
-            const words = ["V68 ist Wahnsinn!", "Ghost-Hand bitte!", "🛡️ Spam gelöscht", "Spürst du das?", "💎💎💎", "Thermal Mode sieht krass aus!"];
-            setInterval(() => {
-                const chat = document.getElementById('chat-zone');
-                const u = users[Math.floor(Math.random()*6)];
-                const isMod = u.includes("Guardian") || u === "Nexus";
-                const m = document.createElement('div');
-                m.className = `msg ${isMod ? 'is-mod' : ''}`;
-                m.innerHTML = `<span><b>${isMod ? '🛡️ ' : ''}${u}:</b> ${words[Math.floor(Math.random()*6)]}</span><i class="fas fa-ban" style="color:red; font-size:11px; opacity:0.2;" onclick="this.parentElement.remove()"></i>`;
+                const chat = document.getElementById('chat'), m = document.createElement('div');
+                m.className = 'msg';
+                m.innerHTML = `<b>${users[Math.floor(Math.random()*5)]}:</b> ${words[Math.floor(Math.random()*5)]}`;
                 chat.appendChild(m);
-                if(chat.children.length > 7) chat.removeChild(chat.firstChild);
-            }, 2200);
+                if(chat.children.length > 6) chat.removeChild(chat.firstChild);
+                if(isPK && Math.random() > 0.7) { pkScore = Math.max(pkScore - 4, 5); updatePK(); }
+            }, 2500);
+        }
+
+        function togglePK() {
+            isPK = !isPK;
+            document.body.classList.toggle('pk-active');
+            document.getElementById('pk-enemy').style.display = isPK ? 'block' : 'none';
+            document.getElementById('pk-bar').style.display = isPK ? 'block' : 'none';
+            document.getElementById('pk-btn').style.background = isPK ? 'var(--pk-red)' : 'rgba(0,0,0,0.6)';
+            if(navigator.vibrate) navigator.vibrate(100);
+        }
+
+        function triggerCombo() {
+            combo++;
+            const wrap = document.getElementById('combo-wrap');
+            document.getElementById('c-count').innerText = combo;
+            wrap.style.display = 'flex';
+            if(isPK) { pkScore = Math.min(pkScore + 6, 95); updatePK(); }
+            if(navigator.vibrate) navigator.vibrate(20);
+            clearTimeout(window.ct);
+            window.ct = setTimeout(() => { wrap.style.display = 'none'; combo = 0; }, 2000);
+        }
+
+        function updatePK() {
+            document.getElementById('pk-b-fill').style.width = pkScore + "%";
+            document.getElementById('pk-r-fill').style.width = (100 - pkScore) + "%";
         }
 
         function toggleThermal() {
             isThermal = !isThermal;
             document.getElementById('v').classList.toggle('thermal');
-            document.getElementById('t-btn').classList.toggle('active');
-            if(navigator.vibrate) navigator.vibrate(40);
+            document.getElementById('th-btn').classList.toggle('active');
         }
 
         function toggleMedia() {
@@ -151,60 +178,44 @@
         }
 
         function toggleBeauty() {
-            isBeautyOpen = !isBeautyOpen;
-            document.getElementById('beauty-panel').style.display = isBeautyOpen ? 'block' : 'none';
+            const p = document.getElementById('beauty-panel');
+            p.style.display = p.style.display === 'block' ? 'none' : 'block';
         }
 
         function applyBeauty(val) {
             document.getElementById('b-val').innerText = val;
-            const blur = val / 35;
-            document.getElementById('v').style.filter = `brightness(1.05) blur(${blur}px) contrast(1.05) ${isThermal ? 'contrast(2) saturate(3) hue-rotate(90deg) invert(1)' : ''}`;
+            document.getElementById('v').style.filter = `blur(${val/40}px) brightness(1.05) ${isThermal ? 'contrast(2) saturate(3) hue-rotate(90deg) invert(1)' : ''}`;
         }
 
-        function triggerShake() {
-            const v = document.getElementById('v');
-            v.classList.add('shake');
-            if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
-            setTimeout(() => v.classList.remove('shake'), 1000);
-        }
-
-        function spawnGhostHand() {
-            const fx = document.getElementById('fx-layer');
+        function spawnGhost() {
             const g = document.createElement('div');
             g.innerHTML = '🖐️';
-            g.style.position = 'absolute'; g.style.left = "40%"; g.style.bottom = "0";
-            g.style.fontSize = "120px"; g.style.filter = "drop-shadow(0 0 30px white)";
-            g.style.animation = "ghostA 1.8s ease-out forwards";
-            fx.appendChild(g);
-            if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
-            setTimeout(() => g.remove(), 1800);
-        }
-
-        function sendMyMessage(e) {
-            e.preventDefault();
-            const i = document.getElementById('u-input');
-            if(!i.value) return;
-            const chat = document.getElementById('chat-zone');
-            const m = document.createElement('div');
-            m.className = "msg is-mod";
-            m.style.background = "rgba(255,255,255,0.15)";
-            m.innerHTML = `<span><b>🛡️ Du:</b> ${i.value}</span>`;
-            chat.appendChild(m);
-            i.value = ""; i.blur();
+            g.style.cssText = "position:absolute; left:40%; bottom:0; font-size:100px; filter:drop-shadow(0 0 20px white); animation: ghost 1.5s forwards; z-index:150;";
+            document.getElementById('fx-layer').appendChild(g);
+            if(navigator.vibrate) navigator.vibrate([100,50,100]);
+            setTimeout(() => g.remove(), 1500);
         }
 
         function spawnHeart(e) {
-            if(document.getElementById('app').style.display !== 'flex' || e.target.tagName === 'INPUT' || e.target.closest('.sidebar')) return;
-            const fx = document.getElementById('fx-layer');
+            if(e.target.tagName === 'INPUT' || e.target.closest('.sidebar')) return;
             const h = document.createElement('div');
             h.innerHTML = '<i class="fas fa-heart"></i>';
-            h.style.position = 'absolute'; h.style.left = e.clientX + 'px'; h.style.top = e.clientY + 'px';
-            h.style.color = "#ff0050"; h.style.fontSize = "35px";
-            h.style.animation = "heartUp 1.3s ease-out forwards";
-            fx.appendChild(h);
+            h.style.cssText = `position:absolute; left:${e.clientX}px; top:${e.clientY}px; color:#ff0050; font-size:30px; animation: heartFly 1.2s forwards; z-index:500;`;
+            document.getElementById('fx-layer').appendChild(h);
             if(navigator.vibrate) navigator.vibrate(15);
-            setTimeout(() => h.remove(), 1300);
+            setTimeout(() => h.remove(), 1200);
+        }
+
+        function sendChat(e) {
+            e.preventDefault();
+            const i = document.getElementById('u-in');
+            if(!i.value) return;
+            const chat = document.getElementById('chat'), m = document.createElement('div');
+            m.className = 'msg'; m.style.background = 'rgba(255,255,255,0.1)';
+            m.innerHTML = `<b>Du:</b> ${i.value}`;
+            chat.appendChild(m); i.value = ""; i.blur();
         }
     </script>
+    <style> @keyframes ghost { 0% { transform: translateY(500px) scale(0.5); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(-200px) scale(2); opacity: 0; } } </style>
 </body>
 </html>
