@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE V115 | ULTIMATE</title>
+    <title>GLIMPSE V116 | ECOSYSTEM</title>
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -11,166 +11,153 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         body, html { height: 100%; background: #000; font-family: -apple-system, sans-serif; color: white; overflow: hidden; position: fixed; width: 100%; }
 
-        /* VIDEO COURT */
-        #court { position: fixed; inset: 0; z-index: 1; display: flex; flex-direction: column; background: #111; }
-        .slot { flex: 1; position: relative; overflow: hidden; background: #000; transition: all 0.4s ease; }
+        /* --- NAVIGATION TABS --- */
+        #nav-top { position: fixed; top: env(safe-area-inset-top, 20px); width: 100%; display: flex; justify-content: center; gap: 30px; z-index: 10000; font-weight: bold; font-size: 17px; opacity: 0.8; }
+        .nav-item { cursor: pointer; padding: 10px; }
+        .nav-active { border-bottom: 3px solid white; opacity: 1; }
+
+        /* --- MODUS 1: VIDEO FEED (Dein React Native Code) --- */
+        #feed-container { position: fixed; inset: 0; overflow-y: scroll; scroll-snap-type: y mandatory; display: block; z-index: 5; }
+        .video-post { width: 100vw; height: 100vh; scroll-snap-align: start; position: relative; background: #000; }
+        .feed-video { width: 100%; height: 100%; object-fit: cover; }
+        
+        .feed-ui-right { position: absolute; right: 15px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
+        .feed-ui-bottom { position: absolute; bottom: 40px; left: 15px; width: 75%; }
+        .feed-btn { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .feed-btn i { font-size: 32px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); }
+
+        /* --- MODUS 2: LIVE STREAM (Agora-Integration) --- */
+        #live-container { position: fixed; inset: 0; display: none; z-index: 10; background: #000; }
         #local-player { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        .remote-player { width: 100%; height: 100%; object-fit: cover; }
 
-        /* PK BATTLE BAR */
-        #pk-bar { display: none; position: fixed; top: env(safe-area-inset-top, 20px); left: 50px; right: 50px; height: 10px; background: blue; border-radius: 5px; overflow: hidden; z-index: 90; border: 1.5px solid white; }
-        #pk-progress { width: 50%; height: 100%; background: red; transition: width 0.3s ease; }
+        /* --- UI ELEMENTE AUS V115 (Shop, Chat, etc.) --- */
+        #live-ui { position: absolute; inset: 0; z-index: 20; pointer-events: none; }
+        .live-sidebar { position: absolute; right: 15px; bottom: 130px; pointer-events: auto; display: flex; flex-direction: column; gap: 20px; }
+        #chat-flow { position: absolute; bottom: 90px; left: 15px; width: 70%; pointer-events: none; }
+        .m { background: rgba(0,0,0,0.3); padding: 8px; border-radius: 10px; margin-bottom: 5px; font-size: 14px; border-left: 3px solid var(--tt-cyan); }
 
-        /* UI-HUD */
-        #hud-stack { position: fixed; inset: 0; z-index: 100; pointer-events: none; display: flex; flex-direction: column; }
-        #top-zone { display: flex; align-items: center; gap: 10px; padding: 20px; margin-top: calc(env(safe-area-inset-top, 20px) + 15px); pointer-events: auto; }
-        .host-pill { background: var(--glass); padding: 5px 15px 5px 5px; border-radius: 25px; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(10px); }
-        .live-badge { background: var(--tt-red); padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: 800; margin-left: auto; }
+        #gate { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        #gate button { background: white; color: black; border: none; padding: 20px 70px; border-radius: 40px; font-weight: 900; margin-top: 20px; }
 
-        #chat-flow { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; margin-bottom: 90px; padding-left: 15px; width: 75%; }
-        .m { background: rgba(0,0,0,0.35); padding: 7px 12px; border-radius: 12px; margin-bottom: 6px; font-size: 14px; width: fit-content; backdrop-filter: blur(8px); border-left: 3px solid var(--tt-cyan); animation: msgIn 0.25s forwards; }
-
-        #sidebar { position: absolute; right: 15px; bottom: 130px; display: flex; flex-direction: column; align-items: center; gap: 20px; pointer-events: auto; }
-        .s-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .s-item i { font-size: 30px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.6)); }
-
-        #input-dock { position: fixed; bottom: 25px; left: 15px; right: 15px; display: flex; gap: 10px; pointer-events: auto; }
-        #in { flex: 1; background: rgba(255,255,255,0.2); border: none; padding: 15px 22px; border-radius: 30px; color: white; outline: none; font-size: 16px; backdrop-filter: blur(15px); }
-        .btn-send { width: 50px; height: 50px; background: var(--tt-cyan); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: black; border: none; font-size: 20px; }
-
-        /* SHOP ANIMATION */
-        @keyframes msgIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        #pk-bar { display: none; position: fixed; top: 100px; left: 50px; right: 50px; height: 10px; background: blue; border-radius: 5px; overflow: hidden; z-index: 100; border: 1.5px solid white; }
+        #pk-progress { width: 50%; height: 100%; background: red; transition: width 0.3s; }
     </style>
 </head>
-<body onclick="kickstart()">
+<body>
 
-    <div id="court">
-        <div class="slot"><div id="local-player"></div></div>
-        <div class="slot" id="slot-guest" style="display: none;"><div id="remote-player-view" class="remote-player"></div></div>
+    <div id="nav-top">
+        <div id="tab-feed" class="nav-item nav-active" onclick="switchTab('feed')">Für dich</div>
+        <div id="tab-live" class="nav-item" onclick="switchTab('live')">Live</div>
     </div>
 
-    <div id="pk-bar"><div id="pk-progress"></div></div>
-
-    <div id="hud-stack">
-        <div id="top-zone">
-            <div class="host-pill">
-                <div style="width:32px; height:32px; border-radius:50%; background:var(--tt-red); border:1px solid white;"></div>
-                <div><p style="font-weight:bold; font-size:12px;">Live-Host</p><p style="font-size:10px; opacity:0.8;">1.2k Zuschauer</p></div>
+    <div id="feed-container">
+        <div class="video-post">
+            <video class="feed-video" loop muted playsinline autoplay src="https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4"></video>
+            <div class="feed-ui-right">
+                <div class="feed-btn" onclick="this.style.color='red'"><i class="fas fa-heart"></i><span>1.2k</span></div>
+                <div class="feed-btn"><i class="fas fa-comment"></i><span>12</span></div>
+                <div class="feed-btn"><i class="fas fa-share"></i><span>Share</span></div>
             </div>
-            <div class="live-badge">LIVE</div>
+            <div class="feed-ui-bottom">
+                <p style="font-weight:bold; margin-bottom:5px;">@tech_nick</p>
+                <p>Mein erster Post auf meiner neuen App! 🚀 #coding #startup</p>
+            </div>
         </div>
-        <div id="chat-flow"></div>
-        <div id="sidebar">
-            <div class="s-item" onclick="pinProduct('Exclusive Glimpse Hoodie', '49')"><i class="fas fa-shopping-cart" style="color:#face15;"></i><span>Shop</span></div>
-            <div class="s-item" onclick="sendGift()"><i class="fas fa-gift" style="color:#face15;"></i><span>Gift</span></div>
-            <div class="s-item" onclick="location.reload()"><i class="fas fa-sync-alt" style="color:white; margin-top:10px;"></i></div>
-        </div>
-        <div id="input-dock">
-            <input type="text" id="in" placeholder="Sag etwas..." onkeypress="if(event.key==='Enter') send()">
-            <button class="btn-send" onclick="send()"><i class="fas fa-paper-plane"></i></button>
+        <div class="video-post">
+            <video class="feed-video" loop muted playsinline src="https://assets.mixkit.co/videos/preview/mixkit-set-of-islands-in-the-ocean-1226-large.mp4"></video>
+            <div class="feed-ui-right">
+                <div class="feed-btn"><i class="fas fa-heart"></i><span>850</span></div>
+                <div class="feed-btn"><i class="fas fa-comment"></i><span>5</span></div>
+                <div class="feed-btn"><i class="fas fa-share"></i><span>Share</span></div>
+            </div>
+            <div class="feed-ui-bottom">
+                <p style="font-weight:bold; margin-bottom:5px;">@travel_queen</p>
+                <p>Wunderschöner Sonnenuntergang am Meer. 🌊</p>
+            </div>
         </div>
     </div>
 
-    <div id="gate" style="position:fixed; inset:0; background:#000; z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
-        <i class="fab fa-tiktok" style="font-size:60px; margin-bottom:10px;"></i>
-        <h2>GLIMPSE V115</h2>
-        <button onclick="setupLiveStream()" style="background:white; color:black; border:none; padding:20px 70px; border-radius:40px; font-weight:900; font-size:18px; margin-top:20px;">INITIALIZE LIVE</button>
+    <div id="live-container">
+        <div id="local-player"></div>
+        <div id="pk-bar"><div id="pk-progress"></div></div>
+        <div id="live-ui">
+            <div id="chat-flow"></div>
+            <div class="live-sidebar">
+                <div class="feed-btn" onclick="sendGift()"><i class="fas fa-gift" style="color:#face15;"></i><span>Gift</span></div>
+                <div class="feed-btn" onclick="pinProduct('App Merch', '29')"><i class="fas fa-shopping-cart" style="color:#face15;"></i><span>Shop</span></div>
+                <div class="feed-btn" onclick="location.reload()"><i class="fas fa-sync-alt"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="gate">
+        <i class="fab fa-tiktok" style="font-size:70px; margin-bottom:10px;"></i>
+        <h2>GLIMPSE V116</h2>
+        <button onclick="initApp()">APP STARTEN</button>
     </div>
 
     <script>
-        let localTracks = { videoTrack: null, audioTrack: null };
-        let hostScore = 50;
+        let currentMode = 'feed';
         const client = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
+        let localTracks = { videoTrack: null, audioTrack: null };
 
-        // --- DEIN NEUER CODE: HEARTBEAT ---
-        function startHeartbeat(uid) {
-            setInterval(async () => {
-                // Konsole meldet den Status (später für API-Request bereit)
-                console.log(`Heartbeat gesendet für User: ${uid} - Status: streaming`);
-                // Hier würde der fetch() stehen
-            }, 10000);
+        function initApp() {
+            document.getElementById('gate').style.display = 'none';
+            // Startet Autoplay für das erste Video
+            document.querySelector('.feed-video').play();
         }
 
-        // --- ZUSCHAUER SIMULATION ---
-        function startViewerSimulation() {
-            let viewers = 1200;
-            setInterval(() => {
-                viewers += Math.floor(Math.random() * 10) - 4; 
-                document.querySelector('.host-pill p:last-child').innerText = (viewers / 1000).toFixed(1) + "k Zuschauer";
-            }, 3000);
-        }
+        function switchTab(mode) {
+            currentMode = mode;
+            document.getElementById('tab-feed').classList.toggle('nav-active', mode === 'feed');
+            document.getElementById('tab-live').classList.toggle('nav-active', mode === 'live');
+            
+            document.getElementById('feed-container').style.display = mode === 'feed' ? 'block' : 'none';
+            document.getElementById('live-container').style.display = mode === 'live' ? 'block' : 'none';
 
-        // --- PRODUKT PINNING ---
-        function pinProduct(name, price) {
-            const shopWidget = document.createElement('div');
-            shopWidget.style = "position:fixed; top:135px; left:15px; background:white; color:black; padding:10px; border-radius:12px; display:flex; gap:10px; align-items:center; z-index:2000; animation: msgIn 0.5s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); pointer-events:auto;";
-            shopWidget.innerHTML = `
-                <div style="font-size:20px;">👕</div>
-                <div><p style="font-weight:bold; font-size:11px; margin:0;">${name}</p><p style="color:#ff0050; font-size:11px; font-weight:bold; margin:0;">${price}€</p></div>
-                <button style="background:#ff0050; color:white; border:none; padding:5px 10px; border-radius:6px; font-size:10px; font-weight:bold;">Kaufen</button>
-            `;
-            document.body.appendChild(shopWidget);
-            setTimeout(() => shopWidget.remove(), 10000); 
-            pushMsg("Shop", `Angebot: ${name}`);
+            if(mode === 'live' && !localTracks.videoTrack) {
+                setupLiveStream();
+            }
         }
 
         async function setupLiveStream() {
             try {
                 [localTracks.audioTrack, localTracks.videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-                document.getElementById('gate').style.display = 'none';
                 localTracks.videoTrack.play("local-player");
-
-                const APP_ID = "DEINE_APP_ID"; 
-                await client.setClientRole("host");
-                const uid = await client.join(APP_ID, "glimpse_live", null, null);
-                await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
-
-                pushMsg("System", "Stream bereit. Heartbeat aktiv.");
                 
-                // --- STARTE HEARTBEAT & SIMULATION ---
-                startHeartbeat(uid);
-                startViewerSimulation(); 
-
-            } catch (e) { console.error(e); }
-        }
-
-        // AGORA EVENT HANDLING
-        client.on("user-published", async (user, mediaType) => {
-            await client.subscribe(user, mediaType);
-            if (mediaType === "video") {
-                document.getElementById('slot-guest').style.display = 'block';
-                user.videoTrack.play("remote-player-view");
-                document.getElementById('pk-bar').style.display = 'block';
-            }
-            if (mediaType === "audio") user.audioTrack.play();
-        });
-
-        function send() { 
-            const i = document.getElementById('in'); 
-            if(i.value.trim()){ pushMsg("Du", i.value); i.value = ""; } 
+                await client.setClientRole("host");
+                const uid = await client.join("DEINE_APP_ID", "glimpse_live", null, null);
+                await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
+                
+                pushMsg("System", "Live-Stream aktiv! 🚀");
+                startViewerSimulation();
+            } catch(e) { console.error(e); }
         }
 
         function pushMsg(u, t) {
             const f = document.getElementById('chat-flow');
             const m = document.createElement('div');
             m.className = 'm';
-            m.innerHTML = `<span style="color:var(--tt-cyan)">${u}:</span> ${t}`;
+            m.innerHTML = `<b>${u}:</b> ${t}`;
             f.appendChild(m);
-            if(f.children.length > 6) f.removeChild(f.firstChild);
-        }
-
-        function updateBattle(points) {
-            hostScore = Math.max(10, Math.min(90, hostScore + points));
-            document.getElementById('pk-progress').style.width = hostScore + "%";
         }
 
         function sendGift() {
-            pushMsg("GIFT", "hat ein GESCHENK gesendet! 🎁");
-            updateBattle(5);
-            if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            pushMsg("GIFT", "hat eine Rose gesendet! 🌹");
+            document.getElementById('pk-bar').style.display = 'block';
+            if(navigator.vibrate) navigator.vibrate(100);
         }
 
-        function kickstart() { AgoraRTC.onAudioAutoplayFailed = () => {}; }
+        function pinProduct(n, p) {
+            pushMsg("Shop", `Produkt: ${n} (${p}€)`);
+        }
+
+        function startViewerSimulation() {
+            setInterval(() => {
+                const views = Math.floor(Math.random() * 50) + 1200;
+                pushMsg("Stats", `${views} Zuschauer`);
+            }, 5000);
+        }
     </script>
 </body>
 </html>
