@@ -3,151 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE V82 | GIFT MASTER</title>
+    <title>GLIMPSE V83 | SUPREME</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --tt-pink: #ff0050; --tt-cyan: #00f2ea; --gold: #ffd700; --mod: #007aff; --pk-blue: #007aff; --pk-red: #ff2d55; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         body, html { height: 100%; background: #000; font-family: -apple-system, sans-serif; color: white; overflow: hidden; position: fixed; width: 100%; }
 
-        /* --- VIDEO GRID --- */
+        /* --- VIDEO ENGINE --- */
         #video-grid { position: fixed; inset: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; background: #111; z-index: 1; }
         .v-slot { position: relative; background: #050505; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .v-slot video, .v-slot img { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; }
+        .v-slot video, .v-slot img { width: 100%; height: 100%; object-fit: cover; opacity: 0.95; background: #000; }
         #v { transform: scaleX(-1); }
 
-        /* --- PK BAR --- */
-        #pk-bar { position: absolute; top: 110px; left: 5%; width: 90%; height: 16px; background: #333; border-radius: 8px; display: none; z-index: 200; overflow: hidden; border: 1.5px solid white; }
-        #pk-b { height: 100%; width: 50%; background: var(--pk-blue); float: left; transition: 0.5s; }
+        /* --- PK & HUD --- */
+        #pk-bar { position: absolute; top: 110px; left: 5%; width: 90%; height: 18px; background: #333; border-radius: 9px; display: none; z-index: 200; overflow: hidden; border: 1.5px solid white; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
+        #pk-b { height: 100%; width: 50%; background: var(--pk-blue); float: left; transition: 0.5s cubic-bezier(0.1, 0.7, 0.1, 1); }
         #pk-r { height: 100%; width: 50%; background: var(--pk-red); float: left; transition: 0.5s; }
 
-        /* --- GIFT ANIMATION LAYER --- */
-        #gift-layer { position: fixed; inset: 0; z-index: 2500; pointer-events: none; display: flex; align-items: center; justify-content: center; }
-        .gift-announcement { background: rgba(0,0,0,0.7); padding: 15px 30px; border-radius: 50px; border: 2px solid var(--gold); animation: giftPop 2s forwards; display: none; text-align: center; }
+        /* --- CHAT (HIGHEST LAYER) --- */
+        #chat { position: absolute; bottom: 135px; left: 15px; width: 80%; height: 220px; display: flex; flex-direction: column; justify-content: flex-end; pointer-events: none; z-index: 5000; }
+        .msg { background: rgba(0,0,0,0.6); padding: 8px 14px; margin-bottom: 6px; border-radius: 18px; font-size: 14px; width: fit-content; border-left: 4px solid var(--tt-cyan); backdrop-filter: blur(10px); animation: msgSlide 0.3s ease-out; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
 
-        /* --- GIFT PANEL (SLIDE UP) --- */
-        #gift-panel { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(13,13,13,0.95); border-top: 3px solid var(--gold); border-top-left-radius: 25px; border-top-right-radius: 25px; z-index: 4000; padding: 20px; transform: translateY(100%); transition: 0.4s; }
+        /* --- GIFT ANIMATION --- */
+        #gift-layer { position: fixed; inset: 0; z-index: 6000; pointer-events: none; display: flex; align-items: center; justify-content: center; }
+        .gift-pop { background: rgba(0,0,0,0.8); padding: 25px 40px; border-radius: 50px; border: 2.5px solid var(--gold); text-align: center; display: none; box-shadow: 0 0 40px var(--gold); animation: giftAnim 2.2s forwards; }
+
+        /* --- INTERACTION DOCK --- */
+        #dock { position: fixed; bottom: 30px; width: 100%; padding: 0 15px; display: flex; gap: 12px; z-index: 5500; align-items: center; }
+        #u-in { flex: 1; background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.2); padding: 15px 22px; border-radius: 35px; color: white; outline: none; font-size: 16px; backdrop-filter: blur(15px); }
+        .dock-btn { width: 52px; height: 52px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 22px; color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
+
+        /* --- GIFT PANEL --- */
+        #gift-panel { position: absolute; bottom: 0; left: 0; width: 100%; background: #0a0a0a; border-top: 3px solid var(--gold); border-top-left-radius: 30px; border-top-right-radius: 30px; z-index: 7000; padding: 25px; transform: translateY(100%); transition: 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); }
         #gift-panel.open { transform: translateY(0); }
-        .gift-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 15px; }
-        .gift-item { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 10px; color: #aaa; }
-        .gift-icon { width: 60px; height: 60px; background: rgba(255,255,255,0.1); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; border: 1px solid rgba(255,255,255,0.1); }
+        .gift-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
+        .g-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .g-icon { width: 65px; height: 65px; background: rgba(255,255,255,0.05); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 1px solid rgba(255,255,255,0.1); }
 
-        /* --- HUD & INPUT --- */
-        #chat { position: absolute; bottom: 130px; left: 15px; width: 75%; height: 180px; display: flex; flex-direction: column; justify-content: flex-end; pointer-events: none; z-index: 1000; }
-        .msg { background: rgba(0,0,0,0.5); padding: 6px 12px; margin-bottom: 5px; border-radius: 12px; font-size: 13px; width: fit-content; border-left: 3px solid var(--tt-cyan); backdrop-filter: blur(5px); }
-        
-        #input-container { position: fixed; bottom: 25px; width: 100%; padding: 0 15px; display: flex; gap: 10px; z-index: 3000; align-items: center; }
-        #u-in { flex: 1; background: rgba(255,255,255,0.2); border: none; padding: 14px 20px; border-radius: 30px; color: white; outline: none; font-size: 16px; }
-        
-        .sidebar { position: absolute; right: 12px; top: 140px; display: flex; flex-direction: column; gap: 12px; z-index: 2200; }
-        .s-btn { width: 50px; height: 50px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 1px solid rgba(255,255,255,0.2); }
+        .sidebar { position: absolute; right: 15px; top: 150px; display: flex; flex-direction: column; gap: 15px; z-index: 4000; }
+        .s-btn { width: 50px; height: 50px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.3); backdrop-filter: blur(10px); font-size: 20px; }
 
-        @keyframes giftPop { 0% { transform: scale(0); opacity: 0; } 20% { transform: scale(1.2); opacity: 1; } 80% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
-        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        @keyframes msgSlide { from { transform: translateX(-40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes giftAnim { 0% { transform: scale(0) rotate(-20deg); opacity: 0; } 15% { transform: scale(1.1) rotate(0deg); opacity: 1; } 85% { transform: scale(1); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
+        @keyframes heartFly { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-600px) scale(4); opacity: 0; } }
     </style>
 </head>
-<body onclick="spawnHeart(event)">
+<body onclick="forceStart(event)">
 
     <div id="video-grid">
         <div class="v-slot"><video id="v" autoplay playsinline muted></video></div>
-        <div class="v-slot empty" id="slot-2"></div>
-        <div class="v-slot empty" id="slot-3"></div>
-        <div class="v-slot empty" id="slot-4"></div>
+        <div class="v-slot empty"></div>
+        <div class="v-slot empty"></div>
+        <div class="v-slot empty"></div>
     </div>
 
     <div id="pk-bar"><div id="pk-b"></div><div id="pk-r"></div></div>
-    <div id="gift-layer"><div id="announcement" class="gift-announcement"></div></div>
+    <div id="gift-layer"><div id="gift-pop" class="gift-pop"></div></div>
     <div id="chat"></div>
 
-    <div id="input-container">
-        <input type="text" id="u-in" placeholder="Kommentieren..." onkeypress="if(event.key==='Enter') sendMsg()">
-        <button onclick="toggleGiftPanel()" style="background:none; border:none; color:var(--gold); font-size:25px; margin-right:5px;"><i class="fas fa-gift"></i></button>
-        <button onclick="sendMsg()" style="background:var(--mod); width:45px; height:45px; border-radius:50%; border:none; color:white;"><i class="fas fa-paper-plane"></i></button>
+    <div id="dock">
+        <input type="text" id="u-in" placeholder="Kommentieren..." autocomplete="off" onkeypress="if(event.key==='Enter') sendMsg()">
+        <button class="dock-btn" onclick="toggleGiftPanel()" style="background:var(--gold);"><i class="fas fa-gift"></i></button>
+        <button class="dock-btn" onclick="sendMsg()" style="background:var(--mod);"><i class="fas fa-paper-plane"></i></button>
     </div>
 
     <div id="gift-panel">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3 style="color:var(--gold)">Gifts</h3>
-            <i class="fas fa-times-circle" onclick="toggleGiftPanel()" style="font-size:20px; opacity:0.5;"></i>
+            <h3 style="color:var(--gold); letter-spacing:1px;">GESCHENKE</h3>
+            <i class="fas fa-times-circle" onclick="toggleGiftPanel()" style="font-size:24px; opacity:0.4;"></i>
         </div>
         <div class="gift-grid">
-            <div class="gift-item" onclick="sendGift('Rose', '🌹', 1)">
-                <div class="gift-icon">🌹</div><span>1</span>
+            <div class="g-item" onclick="fireGift('Rose', '🌹', 1)">
+                <div class="g-icon">🌹</div><span>1</span>
             </div>
-            <div class="gift-item" onclick="sendGift('Herz', '🫰', 5)">
-                <div class="gift-icon">🫰</div><span>5</span>
+            <div class="g-item" onclick="fireGift('Herz', '🫰', 5)">
+                <div class="g-icon">🫰</div><span>5</span>
             </div>
-            <div class="gift-item" onclick="sendGift('Diamant', '💎', 20)">
-                <div class="gift-icon">💎</div><span>20</span>
+            <div class="g-item" onclick="fireGift('Diamant', '💎', 25)">
+                <div class="g-icon">💎</div><span>25</span>
             </div>
-            <div class="gift-item" onclick="sendGift('Universum', '🪐', 50)">
-                <div class="gift-icon" style="border-color:var(--gold)">🪐</div><span>50</span>
+            <div class="g-item" onclick="fireGift('Universum', '🪐', 60)">
+                <div class="g-icon" style="border-color:var(--gold)">🪐</div><span>60</span>
             </div>
         </div>
     </div>
 
     <div id="gate">
-        <h1 style="letter-spacing:5px;">GLIMPSE V82</h1>
-        <button onclick="launch()" style="background:white; color:black; border:none; padding:20px 60px; border-radius:40px; font-weight:900; margin-top:30px;">GO LIVE</button>
+        <div style="width:90px; height:90px; background:linear-gradient(45deg, var(--tt-pink), var(--mod)); border-radius:25px; display:flex; align-items:center; justify-content:center; margin-bottom:25px; box-shadow: 0 0 40px var(--mod);">
+            <i class="fas fa-crown" style="font-size:45px; color:white;"></i>
+        </div>
+        <h1 style="letter-spacing:10px; font-weight:900;">SUPREME V83</h1>
+        <button onclick="launchApp()" style="background:white; color:black; border:none; padding:22px 80px; border-radius:50px; font-weight:900; margin-top:35px;">START LIVE</button>
     </div>
 
     <div id="hud" style="display:none;">
         <div class="sidebar">
             <div class="s-btn" onclick="togglePK()"><i class="fas fa-bolt"></i></div>
-            <div class="s-btn" onclick="location.reload()"><i class="fas fa-sync"></i></div>
+            <div class="s-btn" onclick="location.reload()"><i class="fas fa-sync-alt"></i></div>
         </div>
     </div>
 
     <script>
         let isPK = false, pkScore = 50;
-        const v = document.getElementById('v');
+        const video = document.getElementById('v');
 
-        async function launch() {
+        async function launchApp() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                v.srcObject = stream;
+                video.srcObject = stream;
+                // Force play after 100ms for Safari
+                setTimeout(() => video.play(), 100);
                 document.getElementById('gate').style.display = 'none';
                 document.getElementById('hud').style.display = 'block';
-                addMsg("System", "Live-Stream gestartet. ✅");
-            } catch (e) { alert("Kamera-Fehler!"); }
+                addMsg("System", "Kommando-Zentrale aktiv. ✅");
+            } catch (e) { alert("Kamera-Zugriff verweigert!"); }
         }
 
-        function toggleGiftPanel() { document.getElementById('gift-panel').classList.toggle('open'); }
-
-        function sendGift(name, icon, points) {
-            const announce = document.getElementById('announcement');
-            announce.innerHTML = `<h2 style="color:var(--gold)">${icon}</h2><p><b>Du</b> schickt ${name}!</p>`;
-            announce.style.display = 'block';
+        function forceStart(e) {
+            // iOS Autoplay Fix: Start video on first screen touch
+            if (video.paused && video.srcObject) video.play();
             
-            addMsg("Gift", `Du hast ${icon} ${name} gesendet!`);
-            toggleGiftPanel();
-            
-            if(isPK) {
-                pkScore = Math.min(95, pkScore + points);
-                updatePK();
+            // Spawn hearts if not clicking UI
+            if(e.target.tagName !== 'INPUT' && !e.target.closest('#gift-panel') && !e.target.closest('#dock') && !e.target.closest('.sidebar')) {
+                spawnHeart(e);
             }
-            
-            if(navigator.vibrate) navigator.vibrate([50, 30, 50]);
-            
-            setTimeout(() => { announce.style.display = 'none'; }, 2000);
-        }
-
-        function updatePK() {
-            document.getElementById('pk-b').style.width = pkScore + "%";
-            document.getElementById('pk-r').style.width = (100 - pkScore) + "%";
-        }
-
-        function togglePK() { 
-            isPK = !isPK; 
-            document.getElementById('pk-bar').style.display = isPK ? 'block' : 'none'; 
-            if(isPK) addMsg("System", "PK-Match gestartet!");
         }
 
         function sendMsg() {
             const input = document.getElementById('u-in');
             if(input.value.trim() !== "") {
-                addMsg("Du", input.value);
+                addMsg("🛡️ Du", input.value);
                 input.value = "";
+                if(navigator.vibrate) navigator.vibrate(20);
                 input.focus();
             }
         }
@@ -158,19 +147,45 @@
             m.className = 'msg';
             m.innerHTML = `<b>${n}:</b> ${t}`;
             c.appendChild(m);
-            if(c.children.length > 5) c.removeChild(c.firstChild);
+            if(c.children.length > 6) c.removeChild(c.firstChild);
+        }
+
+        function toggleGiftPanel() { document.getElementById('gift-panel').classList.toggle('open'); if(navigator.vibrate) navigator.vibrate(25); }
+
+        function fireGift(name, icon, pts) {
+            const pop = document.getElementById('gift-pop');
+            pop.innerHTML = `<h1 style="font-size:60px;">${icon}</h1><p style="color:var(--gold); font-weight:bold; margin-top:10px;">Du sendest ${name.toUpperCase()}!</p>`;
+            pop.style.display = 'block';
+            
+            addMsg("GIFT", `Du hast ${icon} ${name} gesendet!`);
+            toggleGiftPanel();
+            
+            if(isPK) { pkScore = Math.min(96, pkScore + pts); updatePK(); }
+            if(navigator.vibrate) navigator.vibrate([60, 40, 60]);
+            
+            setTimeout(() => { pop.style.display = 'none'; }, 2200);
+        }
+
+        function togglePK() { 
+            isPK = !isPK; 
+            document.getElementById('pk-bar').style.display = isPK ? 'block' : 'none'; 
+            if(navigator.vibrate) navigator.vibrate(100);
+        }
+
+        function updatePK() {
+            document.getElementById('pk-b').style.width = pkScore + "%";
+            document.getElementById('pk-r').style.width = (100 - pkScore) + "%";
         }
 
         function spawnHeart(e) {
-            if(e.target.tagName === 'INPUT' || e.target.closest('#gift-panel') || e.target.closest('#input-container')) return;
             const h = document.createElement('div');
             h.innerHTML = '❤️';
-            h.style.cssText = `position:absolute; left:${e.clientX}px; top:${e.clientY}px; color:#ff0050; font-size:35px; animation: heart 1.2s forwards; z-index:2400; pointer-events:none;`;
+            h.style.cssText = `position:absolute; left:${e.clientX}px; top:${e.clientY}px; color:#ff0050; font-size:40px; animation: heartFly 1.5s forwards; z-index:4500; pointer-events:none;`;
             document.body.appendChild(h);
-            setTimeout(() => h.remove(), 1200);
-            if(isPK) { pkScore = Math.min(95, pkScore + 0.5); updatePK(); }
+            setTimeout(() => h.remove(), 1500);
+            if(isPK) { pkScore = Math.min(96, pkScore + 0.6); updatePK(); }
+            if(navigator.vibrate) navigator.vibrate(15);
         }
     </script>
-    <style> @keyframes heart { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-500px) scale(3); opacity: 0; } } </style>
 </body>
 </html>
