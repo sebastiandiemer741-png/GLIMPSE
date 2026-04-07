@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE V81 | COMMANDER</title>
+    <title>GLIMPSE V82 | GIFT MASTER</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --tt-pink: #ff0050; --tt-cyan: #00f2ea; --gold: #ffd700; --mod: #007aff; --pk-blue: #007aff; --pk-red: #ff2d55; --truth: #00ff88; }
+        :root { --tt-pink: #ff0050; --tt-cyan: #00f2ea; --gold: #ffd700; --mod: #007aff; --pk-blue: #007aff; --pk-red: #ff2d55; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         body, html { height: 100%; background: #000; font-family: -apple-system, sans-serif; color: white; overflow: hidden; position: fixed; width: 100%; }
 
@@ -14,88 +14,86 @@
         #video-grid { position: fixed; inset: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; background: #111; z-index: 1; }
         .v-slot { position: relative; background: #050505; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .v-slot video, .v-slot img { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; }
-        #v { transform: scaleX(-1); transition: 0.5s; }
-        .slot-name { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); padding: 2px 8px; border-radius: 5px; font-size: 10px; z-index: 10; }
+        #v { transform: scaleX(-1); }
 
-        /* --- PK & CHALLENGE --- */
+        /* --- PK BAR --- */
         #pk-bar { position: absolute; top: 110px; left: 5%; width: 90%; height: 16px; background: #333; border-radius: 8px; display: none; z-index: 200; overflow: hidden; border: 1.5px solid white; }
         #pk-b { height: 100%; width: 50%; background: var(--pk-blue); float: left; transition: 0.5s; }
         #pk-r { height: 100%; width: 50%; background: var(--pk-red); float: left; transition: 0.5s; }
-        #challenge { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); background: linear-gradient(90deg, var(--tt-pink), var(--mod)); padding: 6px 20px; border-radius: 20px; font-size: 10px; font-weight: 900; z-index: 200; box-shadow: 0 0 15px var(--tt-pink); }
 
-        /* --- CHAT (Z-INDEX 2500) --- */
-        #chat { position: absolute; bottom: 130px; left: 15px; width: 75%; height: 200px; display: flex; flex-direction: column; justify-content: flex-end; pointer-events: none; z-index: 2500; }
-        .msg { background: rgba(0,0,0,0.6); padding: 8px 12px; margin-bottom: 5px; border-radius: 15px; font-size: 13px; width: fit-content; border-left: 3px solid var(--tt-cyan); backdrop-filter: blur(8px); animation: slide 0.3s ease; }
+        /* --- GIFT ANIMATION LAYER --- */
+        #gift-layer { position: fixed; inset: 0; z-index: 2500; pointer-events: none; display: flex; align-items: center; justify-content: center; }
+        .gift-announcement { background: rgba(0,0,0,0.7); padding: 15px 30px; border-radius: 50px; border: 2px solid var(--gold); animation: giftPop 2s forwards; display: none; text-align: center; }
 
-        /* --- INPUT AREA (Z-INDEX 3000 - TOP LAYER) --- */
-        #input-container { position: fixed; bottom: 25px; width: 100%; padding: 0 15px; display: flex; gap: 10px; z-index: 3000; align-items: center; }
-        #u-in { flex: 1; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 14px 20px; border-radius: 30px; color: white; outline: none; font-size: 16px; -webkit-appearance: none; }
-        #send-btn { background: var(--mod); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; color: white; font-size: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        /* --- GIFT PANEL (SLIDE UP) --- */
+        #gift-panel { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(13,13,13,0.95); border-top: 3px solid var(--gold); border-top-left-radius: 25px; border-top-right-radius: 25px; z-index: 4000; padding: 20px; transform: translateY(100%); transition: 0.4s; }
+        #gift-panel.open { transform: translateY(0); }
+        .gift-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 15px; }
+        .gift-item { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 10px; color: #aaa; }
+        .gift-icon { width: 60px; height: 60px; background: rgba(255,255,255,0.1); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; border: 1px solid rgba(255,255,255,0.1); }
 
-        /* --- GUEST PANEL --- */
-        #guest-panel { position: absolute; bottom: 0; left: 0; width: 100%; background: #0d0d0d; border-top-left-radius: 25px; border-top-right-radius: 25px; z-index: 4000; padding: 25px; transform: translateY(100%); transition: 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); border-top: 2px solid var(--mod); }
-        #guest-panel.open { transform: translateY(0); }
-
-        /* --- SIDEBAR --- */
-        .sidebar { position: absolute; right: 12px; top: 140px; display: flex; flex-direction: column; gap: 12px; z-index: 2200; }
-        .s-btn { width: 50px; height: 50px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); }
+        /* --- HUD & INPUT --- */
+        #chat { position: absolute; bottom: 130px; left: 15px; width: 75%; height: 180px; display: flex; flex-direction: column; justify-content: flex-end; pointer-events: none; z-index: 1000; }
+        .msg { background: rgba(0,0,0,0.5); padding: 6px 12px; margin-bottom: 5px; border-radius: 12px; font-size: 13px; width: fit-content; border-left: 3px solid var(--tt-cyan); backdrop-filter: blur(5px); }
         
-        #req-btn { position: absolute; bottom: 120px; left: 15px; width: 50px; height: 50px; background: var(--mod); border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 2100; border: 2px solid white; }
+        #input-container { position: fixed; bottom: 25px; width: 100%; padding: 0 15px; display: flex; gap: 10px; z-index: 3000; align-items: center; }
+        #u-in { flex: 1; background: rgba(255,255,255,0.2); border: none; padding: 14px 20px; border-radius: 30px; color: white; outline: none; font-size: 16px; }
+        
+        .sidebar { position: absolute; right: 12px; top: 140px; display: flex; flex-direction: column; gap: 12px; z-index: 2200; }
+        .s-btn { width: 50px; height: 50px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 1px solid rgba(255,255,255,0.2); }
 
-        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        @keyframes slide { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes heart { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-500px) scale(3); opacity: 0; } }
+        @keyframes giftPop { 0% { transform: scale(0); opacity: 0; } 20% { transform: scale(1.2); opacity: 1; } 80% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body onclick="spawnHeart(event)">
 
     <div id="video-grid">
-        <div class="v-slot"><video id="v" autoplay playsinline muted></video><div class="slot-name">Host (Du)</div></div>
-        <div class="v-slot empty" id="slot-2"><div class="slot-name">Gast 2</div></div>
-        <div class="v-slot empty" id="slot-3"><div class="slot-name">Gast 3</div></div>
-        <div class="v-slot empty" id="slot-4"><div class="slot-name">Gast 4</div></div>
+        <div class="v-slot"><video id="v" autoplay playsinline muted></video></div>
+        <div class="v-slot empty" id="slot-2"></div>
+        <div class="v-slot empty" id="slot-3"></div>
+        <div class="v-slot empty" id="slot-4"></div>
     </div>
 
     <div id="pk-bar"><div id="pk-b"></div><div id="pk-r"></div></div>
-    <div id="challenge">GOAL: 25k LIKES ❤️</div>
-
+    <div id="gift-layer"><div id="announcement" class="gift-announcement"></div></div>
     <div id="chat"></div>
-
-    <div id="req-btn" onclick="togglePanel()">
-        <i class="fas fa-user-plus"></i>
-    </div>
 
     <div id="input-container">
         <input type="text" id="u-in" placeholder="Kommentieren..." onkeypress="if(event.key==='Enter') sendMsg()">
-        <button id="send-btn" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
+        <button onclick="toggleGiftPanel()" style="background:none; border:none; color:var(--gold); font-size:25px; margin-right:5px;"><i class="fas fa-gift"></i></button>
+        <button onclick="sendMsg()" style="background:var(--mod); width:45px; height:45px; border-radius:50%; border:none; color:white;"><i class="fas fa-paper-plane"></i></button>
     </div>
 
-    <div id="guest-panel">
-        <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items:center;">
-            <h3>LIVE-ANFRAGEN</h3>
-            <i class="fas fa-times-circle" style="font-size:24px; opacity:0.5;" onclick="togglePanel()"></i>
+    <div id="gift-panel">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="color:var(--gold)">Gifts</h3>
+            <i class="fas fa-times-circle" onclick="toggleGiftPanel()" style="font-size:20px; opacity:0.5;"></i>
         </div>
-        <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:15px; display:flex; justify-content:space-between; align-items:center;">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <img src="https://i.pravatar.cc/100?u=sarah" style="width:40px; border-radius:50%;">
-                <b>Sarah_Live</b>
+        <div class="gift-grid">
+            <div class="gift-item" onclick="sendGift('Rose', '🌹', 1)">
+                <div class="gift-icon">🌹</div><span>1</span>
             </div>
-            <button onclick="acceptGuest('slot-2', 'Sarah_Live', 'sarah')" style="background:var(--mod); color:white; border:none; padding:10px 15px; border-radius:10px;">ANNEHMEN</button>
+            <div class="gift-item" onclick="sendGift('Herz', '🫰', 5)">
+                <div class="gift-icon">🫰</div><span>5</span>
+            </div>
+            <div class="gift-item" onclick="sendGift('Diamant', '💎', 20)">
+                <div class="gift-icon">💎</div><span>20</span>
+            </div>
+            <div class="gift-item" onclick="sendGift('Universum', '🪐', 50)">
+                <div class="gift-icon" style="border-color:var(--gold)">🪐</div><span>50</span>
+            </div>
         </div>
     </div>
 
     <div id="gate">
-        <div style="width:80px; height:80px; background:var(--tt-pink); border-radius:20px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; box-shadow: 0 0 30px var(--tt-pink);">
-            <i class="fas fa-comments" style="font-size:40px;"></i>
-        </div>
-        <h1 style="letter-spacing:5px;">GLIMPSE V81</h1>
-        <button onclick="launchApp()" style="background:white; color:black; border:none; padding:20px 60px; border-radius:40px; font-weight:900; margin-top:30px;">GO LIVE</button>
+        <h1 style="letter-spacing:5px;">GLIMPSE V82</h1>
+        <button onclick="launch()" style="background:white; color:black; border:none; padding:20px 60px; border-radius:40px; font-weight:900; margin-top:30px;">GO LIVE</button>
     </div>
 
     <div id="hud" style="display:none;">
         <div class="sidebar">
             <div class="s-btn" onclick="togglePK()"><i class="fas fa-bolt"></i></div>
-            <div class="s-btn" onclick="spawnGhost()"><i class="fas fa-hand-sparkles"></i></div>
             <div class="s-btn" onclick="location.reload()"><i class="fas fa-sync"></i></div>
         </div>
     </div>
@@ -104,27 +102,52 @@
         let isPK = false, pkScore = 50;
         const v = document.getElementById('v');
 
-        async function launchApp() {
+        async function launch() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 v.srcObject = stream;
                 document.getElementById('gate').style.display = 'none';
                 document.getElementById('hud').style.display = 'block';
-                addMsg("System", "Chat-Modus aktiv. ✅");
-            } catch (e) { alert("Bitte Kamera erlauben!"); }
+                addMsg("System", "Live-Stream gestartet. ✅");
+            } catch (e) { alert("Kamera-Fehler!"); }
         }
 
-        // KOMMENTAR-FUNKTION (FIXED)
+        function toggleGiftPanel() { document.getElementById('gift-panel').classList.toggle('open'); }
+
+        function sendGift(name, icon, points) {
+            const announce = document.getElementById('announcement');
+            announce.innerHTML = `<h2 style="color:var(--gold)">${icon}</h2><p><b>Du</b> schickt ${name}!</p>`;
+            announce.style.display = 'block';
+            
+            addMsg("Gift", `Du hast ${icon} ${name} gesendet!`);
+            toggleGiftPanel();
+            
+            if(isPK) {
+                pkScore = Math.min(95, pkScore + points);
+                updatePK();
+            }
+            
+            if(navigator.vibrate) navigator.vibrate([50, 30, 50]);
+            
+            setTimeout(() => { announce.style.display = 'none'; }, 2000);
+        }
+
+        function updatePK() {
+            document.getElementById('pk-b').style.width = pkScore + "%";
+            document.getElementById('pk-r').style.width = (100 - pkScore) + "%";
+        }
+
+        function togglePK() { 
+            isPK = !isPK; 
+            document.getElementById('pk-bar').style.display = isPK ? 'block' : 'none'; 
+            if(isPK) addMsg("System", "PK-Match gestartet!");
+        }
+
         function sendMsg() {
             const input = document.getElementById('u-in');
-            const text = input.value.trim();
-            
-            if(text !== "") {
-                addMsg("Du", text);
+            if(input.value.trim() !== "") {
+                addMsg("Du", input.value);
                 input.value = "";
-                // Haptisches Feedback beim Senden
-                if(navigator.vibrate) navigator.vibrate(20);
-                // Fokus behalten für schnelles Tippen
                 input.focus();
             }
         }
@@ -135,39 +158,19 @@
             m.className = 'msg';
             m.innerHTML = `<b>${n}:</b> ${t}`;
             c.appendChild(m);
-            // Automatisches Scrollen / Begrenzen
             if(c.children.length > 5) c.removeChild(c.firstChild);
         }
 
-        function togglePanel() { document.getElementById('guest-panel').classList.toggle('open'); }
-
-        function acceptGuest(id, name, avatar) {
-            const slot = document.getElementById(id);
-            slot.classList.remove('empty');
-            slot.innerHTML = `<img src="https://i.pravatar.cc/400?u=${avatar}"><div class="slot-name">${name}</div>`;
-            togglePanel();
-        }
-
-        function togglePK() { isPK = !isPK; document.getElementById('pk-bar').style.display = isPK ? 'block' : 'none'; }
-
-        function spawnGhost() {
-            const g = document.createElement('div'); g.innerHTML = '🖐️';
-            g.style.cssText = "position:absolute; left:40%; bottom:0; font-size:120px; filter:drop-shadow(0 0 30px white); animation: ghostMove 1.6s forwards; z-index:2500; pointer-events:none;";
-            document.body.appendChild(g); setTimeout(() => g.remove(), 1600);
-        }
-
         function spawnHeart(e) {
-            if(e.target.tagName === 'INPUT' || e.target.closest('#input-container')) return;
-            const h = document.createElement('div'); h.innerHTML = '❤️';
+            if(e.target.tagName === 'INPUT' || e.target.closest('#gift-panel') || e.target.closest('#input-container')) return;
+            const h = document.createElement('div');
+            h.innerHTML = '❤️';
             h.style.cssText = `position:absolute; left:${e.clientX}px; top:${e.clientY}px; color:#ff0050; font-size:35px; animation: heart 1.2s forwards; z-index:2400; pointer-events:none;`;
-            document.body.appendChild(h); setTimeout(() => h.remove(), 1200);
-            if(isPK) { 
-                pkScore = Math.min(95, pkScore + 1); 
-                document.getElementById('pk-b').style.width = pkScore + "%";
-                document.getElementById('pk-r').style.width = (100 - pkScore) + "%";
-            }
+            document.body.appendChild(h);
+            setTimeout(() => h.remove(), 1200);
+            if(isPK) { pkScore = Math.min(95, pkScore + 0.5); updatePK(); }
         }
     </script>
-    <style> @keyframes ghostMove { 0% { transform: translateY(500px) scale(0.5); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(-200px) scale(2.5); opacity: 0; } } </style>
+    <style> @keyframes heart { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-500px) scale(3); opacity: 0; } } </style>
 </body>
 </html>
