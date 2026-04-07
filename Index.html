@@ -3,147 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE V54 | LIVE CONSOLE</title>
+    <title>GLIMPSE V58 | TOTAL LIVE</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --live-red: #ff0050; --live-blue: #00f2ea; --gold: #ffd700; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; font-family: 'proxima-nova', sans-serif; color: white; overflow: hidden; }
+        :root { --tt-red: #ff0050; --tt-cyan: #00f2ea; --gold: #ffd700; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body, html { height: 100%; background: #000; font-family: -apple-system, sans-serif; color: white; overflow: hidden; }
 
-        /* --- VIDEO LAYER --- */
-        #v { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); transition: 0.4s; }
-        .pk-active { width: 50% !important; border-right: 2px solid white; }
+        /* --- VIDEO & FX LAYER --- */
+        #v { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); }
+        #heart-container { position: fixed; inset: 0; z-index: 200; pointer-events: none; }
 
-        /* --- HUD --- */
-        .hud { position: relative; z-index: 100; height: 100%; display: none; flex-direction: column; padding: 50px 15px 20px; pointer-events: none; }
-        .hud * { pointer-events: auto; }
+        /* --- HUD INTERFACE --- */
+        .hud { position: relative; z-index: 100; height: 100%; display: none; flex-direction: column; padding: 50px 15px 20px; }
 
-        /* TOP: LIVE STATS & PK BAR */
-        .top-row { display: flex; justify-content: space-between; align-items: center; }
-        .user-pill { background: rgba(0,0,0,0.4); padding: 5px 10px; border-radius: 20px; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(10px); }
-        .pk-bar { position: absolute; top: 100px; left: 10%; width: 80%; height: 6px; background: var(--live-red); border-radius: 3px; display: none; overflow: hidden; }
-        #pk-progress { width: 60%; height: 100%; background: var(--live-blue); transition: 0.5s; }
+        /* HEADER: CREATOR & SPECTATORS */
+        .header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .creator-info { background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 25px; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(15px); border: 0.5px solid rgba(255,255,255,0.2); }
+        .spec-list { display: flex; align-items: center; gap: 4px; }
+        .spec-avatar { width: 26px; height: 26px; border-radius: 50%; border: 1px solid white; background: #333; object-fit: cover; }
 
-        /* SIDEBAR: FILTERS & TOOLS */
-        .sidebar { position: absolute; right: 10px; top: 150px; display: flex; flex-direction: column; gap: 15px; }
-        .tool { width: 45px; height: 45px; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; backdrop-filter: blur(10px); }
+        /* LIVE GOAL BAR */
+        .goal-box { position: absolute; top: 100px; left: 15px; width: 120px; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 8px; border: 0.5px solid rgba(255,255,255,0.1); }
+        .bar-bg { height: 4px; background: #222; border-radius: 2px; margin-top: 4px; overflow: hidden; }
+        .bar-fill { width: 45%; height: 100%; background: linear-gradient(90deg, var(--tt-cyan), var(--tt-red)); box-shadow: 0 0 10px var(--tt-red); }
 
-        /* CHAT & HEART ANIMATION */
-        .bottom-section { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 80px; }
-        #chat { max-width: 75%; display: flex; flex-direction: column; gap: 5px; }
-        .msg { background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 12px; font-size: 13px; line-height: 1.4; animation: slideUp 0.3s ease; }
-        .msg b { color: #aaa; margin-right: 5px; }
+        /* CHAT SYSTEM */
+        .chat-zone { position: absolute; bottom: 90px; left: 15px; width: 75%; height: 240px; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; mask-image: linear-gradient(to top, black 80%, transparent); }
+        .msg { background: rgba(0,0,0,0.25); padding: 5px 12px; border-radius: 12px; font-size: 14px; margin-bottom: 5px; animation: msgIn 0.2s ease; width: fit-content; }
+        .msg b { color: var(--tt-cyan); font-weight: 600; margin-right: 6px; }
+        .msg.join { color: #aaa; font-style: italic; font-size: 12px; }
 
-        /* FLOATING HEARTS */
-        .heart { position: absolute; bottom: 100px; right: 20px; font-size: 24px; color: var(--live-red); animation: flyUp 1.5s ease-out forwards; pointer-events: none; z-index: 1000; }
+        /* GIFT POPUP */
+        #gift-anim { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0); z-index: 500; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; }
+        .gift-card { background: rgba(0,0,0,0.85); border: 2px solid var(--gold); padding: 25px; border-radius: 25px; text-align: center; box-shadow: 0 0 40px var(--gold); }
 
-        /* DOCK */
-        .dock { height: 70px; background: linear-gradient(transparent, rgba(0,0,0,0.8)); display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; width: 100%; }
+        /* INTERACTION DOCK */
+        .dock { position: fixed; bottom: 0; width: 100%; height: 80px; display: flex; align-items: center; padding: 0 15px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); z-index: 300; }
+        .input-fake { flex: 1; background: rgba(255,255,255,0.15); padding: 12px 18px; border-radius: 25px; font-size: 14px; color: #ddd; }
+        .action-icon { font-size: 26px; margin-left: 18px; filter: drop-shadow(0 2px 5px black); }
 
-        @keyframes flyUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-300px) scale(2) rotate(20deg); opacity: 0; } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* ANIMATIONS */
+        @keyframes msgIn { from { opacity: 0; transform: translateX(-15px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes heartUp { 0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; } 100% { transform: translateY(-450px) scale(3) rotate(30deg); opacity: 0; } }
+
+        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
-<body>
+<body onclick="createHeart(event)">
 
     <video id="v" autoplay playsinline muted></video>
+    <div id="heart-container"></div>
     
-    <div id="pk-ui" class="pk-bar"><div id="pk-progress"></div></div>
+    <div id="gift-anim">
+        <div class="gift-card">
+            <i class="fas fa-crown" style="font-size: 60px; color: var(--gold); margin-bottom: 15px;"></i>
+            <h2 style="color:var(--gold); letter-spacing:2px;">LEGENDÄR!</h2>
+            <p id="gift-txt" style="font-size: 12px; opacity:0.8;">User_77 hat eine Krone gesendet</p>
+        </div>
+    </div>
 
-    <div id="gate" style="position:fixed; inset:0; background:#000; z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-        <h1 style="letter-spacing:10px;">LIVE</h1>
-        <button onclick="launchLive()" style="background:var(--live-red); color:white; border:none; padding:18px 60px; border-radius:30px; font-weight:900; font-size:16px;">START BROADCAST</button>
+    <div id="gate">
+        <div style="width:70px; height:70px; background:var(--tt-red); border-radius:20px; display:flex; align-items:center; justify-content:center; margin-bottom:20px;">
+            <i class="fas fa-play" style="font-size:30px;"></i>
+        </div>
+        <h1 style="letter-spacing:10px;">GLIMPSE LIVE</h1>
+        <button onclick="startFullLive()" style="background:white; color:black; border:none; padding:18px 60px; border-radius:35px; font-weight:900; margin-top:30px;">JETZT STARTEN</button>
     </div>
 
     <div id="app" class="hud">
-        <div class="top-row">
-            <div class="user-pill">
-                <div style="width:25px; height:25px; background:var(--live-blue); border-radius:50%;"></div>
-                <div style="font-size:11px;"><b>Creator_Master</b><br>1.4k Zuschauer</div>
+        <div class="header">
+            <div class="creator-info">
+                <div style="width:30px; height:30px; background:var(--tt-cyan); border-radius:50%; border:1.5px solid white;"></div>
+                <div style="font-size:11px;"><b>Sovereign_Live</b><br><span style="color:var(--tt-cyan)">1.2M Likes</span></div>
             </div>
-            <div style="background:rgba(0,0,0,0.5); padding:5px 15px; border-radius:15px; font-size:11px;" onclick="location.reload()">BEENDEN</div>
+            <div class="spec-list">
+                <img src="https://i.pravatar.cc/100?u=1" class="spec-avatar">
+                <img src="https://i.pravatar.cc/100?u=2" class="spec-avatar">
+                <img src="https://i.pravatar.cc/100?u=3" class="spec-avatar">
+                <div style="background:rgba(0,0,0,0.5); padding:4px 8px; border-radius:10px; font-size:11px; margin-left:5px;">2.4k</div>
+            </div>
         </div>
 
-        <div class="sidebar">
-            <div class="tool" onclick="toggleBeauty()"><i class="fas fa-wand-magic-sparkles"></i></div>
-            <div class="tool" onclick="togglePK()"><i class="fas fa-trophy" style="color:var(--gold)"></i></div>
-            <div class="tool" onclick="alert('Gast-Anfrage gesendet...')"><i class="fas fa-user-plus"></i></div>
-            <div class="tool" onclick="sendEffect()"><i class="fas fa-gift" style="color:var(--gold)"></i></div>
+        <div class="goal-box">
+            <div style="font-size:8px; font-weight:bold; display:flex; justify-content:space-between;">
+                <span>LIVE ZIEL</span>
+                <span>45%</span>
+            </div>
+            <div class="bar-bg"><div class="bar-fill"></div></div>
         </div>
 
-        <div class="bottom-section">
-            <div id="chat">
-                <div class="msg"><b>System:</b> Willkommen im sicheren Live-Stream! 🛡️</div>
-            </div>
+        <div class="chat-zone" id="chat">
+            <div class="msg join">User_Kev ist dem Live beigetreten</div>
         </div>
 
         <div class="dock">
-            <div style="flex:1; background:rgba(255,255,255,0.1); margin:0 20px; padding:10px; border-radius:20px; font-size:13px; opacity:0.6;">Schreib etwas...</div>
-            <div onclick="addHeart()" style="font-size:30px; margin-right:20px;"><i class="fas fa-heart" style="color:var(--live-red)"></i></div>
+            <div class="input-fake">Kommentieren...</div>
+            <div class="action-icon" onclick="triggerBigGift()"><i class="fas fa-gift" style="color:var(--gold)"></i></div>
+            <div class="action-icon" onclick="createHeart(event)"><i class="fas fa-heart" style="color:var(--tt-red)"></i></div>
+            <div class="action-icon"><i class="fas fa-share"></i></div>
         </div>
     </div>
 
     <script>
-        let isBeauty = false;
-        let isPK = false;
-
-        async function launchLive() {
+        async function startFullLive() {
             try {
                 const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 document.getElementById('v').srcObject = s;
                 document.getElementById('gate').style.display = 'none';
                 document.getElementById('app').style.display = 'flex';
-                simulateChat();
-            } catch (e) { alert("Cam Error."); }
+                runLiveEngine();
+            } catch (e) { alert("Cam-Zugriff benötigt!"); }
         }
 
-        function toggleBeauty() {
-            isBeauty = !isBeauty;
-            document.getElementById('v').style.filter = isBeauty ? "brightness(1.1) contrast(0.9) blur(1px)" : "none";
-            if(navigator.vibrate) navigator.vibrate(40);
+        function createHeart(e) {
+            if(document.getElementById('app').style.display !== 'flex') return;
+            const colors = ['#ff0050', '#00f2ea', '#ffd700', '#ffffff', '#ff66aa'];
+            const container = document.getElementById('heart-container');
+            const heart = document.createElement('div');
+            
+            heart.innerHTML = '<i class="fas fa-heart"></i>';
+            heart.style.position = 'absolute';
+            // Startet entweder an der Klick-Position oder unten rechts am Herz-Icon
+            heart.style.left = (e.clientX || (window.innerWidth - 50)) + (Math.random()*40-20) + 'px';
+            heart.style.top = (e.clientY || (window.innerHeight - 80)) + 'px';
+            heart.style.color = colors[Math.floor(Math.random() * colors.length)];
+            heart.style.fontSize = (Math.random() * 15 + 20) + 'px';
+            heart.style.animation = `heartUp ${Math.random() * 0.5 + 1}s ease-out forwards`;
+            
+            container.appendChild(heart);
+            if(navigator.vibrate) navigator.vibrate(15);
+            setTimeout(() => heart.remove(), 1500);
         }
 
-        function togglePK() {
-            isPK = !isPK;
-            const v = document.getElementById('v');
-            const pkBar = document.getElementById('pk-ui');
-            if(isPK) {
-                v.classList.add('pk-active');
-                pkBar.style.display = 'block';
-                document.body.style.background = "linear-gradient(90deg, #000 50%, var(--live-red) 50%)";
-            } else {
-                v.classList.remove('pk-active');
-                pkBar.style.display = 'none';
-                document.body.style.background = "#000";
-            }
+        function triggerBigGift() {
+            const overlay = document.getElementById('gift-anim');
+            overlay.style.transform = 'translate(-50%, -50%) scale(1)';
+            if(navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+            setTimeout(() => { overlay.style.transform = 'translate(-50%, -50%) scale(0)'; }, 3000);
         }
 
-        function addHeart() {
-            const h = document.createElement('div');
-            h.className = 'heart';
-            h.innerHTML = '<i class="fas fa-heart"></i>';
-            h.style.left = (window.innerWidth - 60) + 'px';
-            document.body.appendChild(h);
-            setTimeout(() => h.remove(), 1500);
-            if(navigator.vibrate) navigator.vibrate(20);
-        }
-
-        function simulateChat() {
-            const users = ["Rico", "Sarah", "Dev", "Max"];
-            const texts = ["Mega Filter!", "PK-Runde?", "G-Power geschickt!", "Hi aus Berlin"];
+        function runLiveEngine() {
+            const users = ["Rico", "Sarah", "Max", "Lia", "Justin", "Elena", "Tox", "Basti"];
+            const words = ["Krass!", "Tippt den Screen Leute! ❤️", "G-Power geschickt ⚡", "Hi aus Berlin!", "💎💎💎", "Was für ein Vibe!", "Teilt den Stream!"];
+            
             setInterval(() => {
                 const chat = document.getElementById('chat');
                 const m = document.createElement('div');
-                m.className = 'msg';
-                m.innerHTML = `<b>${users[Math.floor(Math.random()*4)]}</b> ${texts[Math.floor(Math.random()*4)]}`;
+                
+                if(Math.random() > 0.8) {
+                    m.className = 'msg join';
+                    m.innerHTML = `${users[Math.floor(Math.random()*users.length)]} ist beigetreten`;
+                } else {
+                    m.className = 'msg';
+                    m.innerHTML = `<b>${users[Math.floor(Math.random()*users.length)]}</b> ${words[Math.floor(Math.random()*words.length)]}`;
+                }
+                
                 chat.appendChild(m);
-                if(chat.children.length > 6) chat.removeChild(chat.firstChild);
-            }, 3000);
-        }
-
-        function sendEffect() {
-            alert("G-Power Diamant erhalten! 💎 +1000");
-            if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                if(chat.children.length > 8) chat.removeChild(chat.firstChild);
+                
+                // Automatische Herzen-Bots simulieren
+                if(Math.random() > 0.6) createHeart({});
+            }, 1800);
         }
     </script>
 </body>
