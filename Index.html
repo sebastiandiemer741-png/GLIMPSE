@@ -1,207 +1,28 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE V84 | OMNIPRESENT</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root { --tt-pink: #ff0050; --tt-cyan: #00f2ea; --gold: #ffd700; --mod: #007aff; --pk-blue: #007aff; --pk-red: #ff2d55; --truth: #00ff88; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        body, html { height: 100%; background: #000; font-family: -apple-system, sans-serif; color: white; overflow: hidden; position: fixed; width: 100%; }
-
-        /* --- VIDEO GRID (4 SLOTS) --- */
-        #video-grid { position: fixed; inset: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; background: #111; z-index: 1; }
-        .v-slot { position: relative; background: #050505; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .v-slot video, .v-slot img { width: 100%; height: 100%; object-fit: cover; opacity: 0.95; background: #000; }
-        #v { transform: scaleX(-1); transition: 0.5s; }
-        .thermal { filter: contrast(2) saturate(3) hue-rotate(90deg) invert(1) !important; }
-        .slot-name { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); padding: 2px 8px; border-radius: 5px; font-size: 10px; z-index: 10; border: 0.5px solid rgba(255,255,255,0.2); }
-
-        /* --- PK & OVERLAYS --- */
-        #pk-bar { position: absolute; top: 110px; left: 5%; width: 90%; height: 18px; background: #333; border-radius: 9px; display: none; z-index: 200; overflow: hidden; border: 1.5px solid white; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
-        #pk-b { height: 100%; width: 50%; background: var(--pk-blue); float: left; transition: 0.5s cubic-bezier(0.1, 0.7, 0.1, 1); }
-        #pk-r { height: 100%; width: 50%; background: var(--pk-red); float: left; transition: 0.5s; }
+<script>
+    // Simulation einer eingehenden Anfrage (wie bei TikTok)
+    function simulateIncomingRequest() {
+        const alertBox = document.createElement('div');
+        alertBox.style.cssText = "position:fixed; top:20px; left:5%; width:90%; background:linear-gradient(90deg, #ff0050, #007aff); padding:15px; border-radius:15px; z-index:9000; display:flex; justify-content:space-between; align-items:center; animation: slideDown 0.5s forwards; border:1px solid white;";
+        alertBox.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px;">
+                <img src="https://i.pravatar.cc/100?u=sarah" style="width:35px; border-radius:50%; border:2px solid white;">
+                <span style="font-weight:bold; font-size:14px;">Anfrage: Sarah_Live</span>
+            </div>
+            <button onclick="this.parentElement.remove(); acceptGuest('slot-2', 'Sarah_Live', 'sarah')" style="background:white; color:black; border:none; padding:8px 15px; border-radius:20px; font-weight:bold; font-size:12px;">ANNEHMEN</button>
+        `;
+        document.body.appendChild(alertBox);
         
-        .truth-box { position: absolute; top: 135px; left: 15px; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 10px; border: 1px solid var(--truth); z-index: 200; backdrop-filter: blur(5px); }
-        #t-fill { height: 4px; width: 80%; background: var(--truth); margin-top: 4px; transition: 1s; box-shadow: 0 0 10px var(--truth); }
+        // Sound/Vibration Effekt
+        if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
+    }
 
-        /* --- CHAT (HIGHEST LAYER) --- */
-        #chat { position: absolute; bottom: 135px; left: 15px; width: 80%; height: 220px; display: flex; flex-direction: column; justify-content: flex-end; pointer-events: none; z-index: 5000; }
-        .msg { background: rgba(0,0,0,0.6); padding: 8px 14px; margin-bottom: 6px; border-radius: 18px; font-size: 14px; width: fit-content; border-left: 4px solid var(--tt-cyan); backdrop-filter: blur(10px); animation: msgSlide 0.3s ease-out; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+    // Starte eine Test-Anfrage nach 10 Sekunden Live-Zeit
+    setTimeout(simulateIncomingRequest, 10000);
+</script>
 
-        /* --- GIFT ANIMATION --- */
-        #gift-layer { position: fixed; inset: 0; z-index: 6000; pointer-events: none; display: flex; align-items: center; justify-content: center; }
-        .gift-pop { background: rgba(0,0,0,0.8); padding: 25px 40px; border-radius: 50px; border: 2.5px solid var(--gold); text-align: center; display: none; box-shadow: 0 0 40px var(--gold); animation: giftAnim 2.2s forwards; }
-
-        /* --- INPUT & DOCK --- */
-        #dock { position: fixed; bottom: 30px; width: 100%; padding: 0 15px; display: flex; gap: 12px; z-index: 5500; align-items: center; }
-        #u-in { flex: 1; background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.2); padding: 15px 22px; border-radius: 35px; color: white; outline: none; font-size: 16px; backdrop-filter: blur(15px); }
-        .dock-btn { width: 52px; height: 52px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 22px; color: white; }
-
-        /* --- PANELS (GUESTS & GIFTS) --- */
-        .bottom-panel { position: absolute; bottom: 0; left: 0; width: 100%; background: #0a0a0a; border-top-left-radius: 30px; border-top-right-radius: 30px; z-index: 7000; padding: 25px; transform: translateY(100%); transition: 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); }
-        .bottom-panel.open { transform: translateY(0); }
-        #guest-panel { border-top: 3px solid var(--mod); }
-        #gift-panel { border-top: 3px solid var(--gold); }
-        
-        .grid-layout { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
-        .g-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        .g-icon { width: 65px; height: 65px; background: rgba(255,255,255,0.05); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 1px solid rgba(255,255,255,0.1); }
-
-        .sidebar { position: absolute; right: 15px; top: 150px; display: flex; flex-direction: column; gap: 15px; z-index: 4000; }
-        .s-btn { width: 50px; height: 50px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.3); backdrop-filter: blur(10px); font-size: 20px; }
-
-        #req-btn { position: absolute; bottom: 120px; left: 15px; width: 50px; height: 50px; background: var(--mod); border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 2100; border: 2px solid white; box-shadow: 0 0 15px var(--mod); }
-
-        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        @keyframes msgSlide { from { transform: translateX(-40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes giftAnim { 0% { transform: scale(0) rotate(-20deg); opacity: 0; } 15% { transform: scale(1.1) rotate(0deg); opacity: 1; } 85% { transform: scale(1); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
-        @keyframes heartFly { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-600px) scale(4); opacity: 0; } }
-    </style>
-</head>
-<body onclick="forceStart(event)">
-
-    <div id="video-grid">
-        <div class="v-slot"><video id="v" autoplay playsinline muted></video><div class="slot-name">Du (Host)</div></div>
-        <div class="v-slot empty" id="slot-2"><div class="slot-name">Warten...</div></div>
-        <div class="v-slot empty" id="slot-3"><div class="slot-name">Warten...</div></div>
-        <div class="v-slot empty" id="slot-4"><div class="slot-name">Warten...</div></div>
-    </div>
-
-    <div id="pk-bar"><div id="pk-b"></div><div id="pk-r"></div></div>
-    <div id="gift-layer"><div id="gift-pop" class="gift-pop"></div></div>
-    <div id="chat"></div>
-
-    <div class="truth-box"><div style="font-size:7px; font-weight:bold; color:var(--truth);">AUTHENTICITY</div><div id="t-fill"></div></div>
-
-    <div id="req-btn" onclick="togglePanel('guest-panel')"><i class="fas fa-user-plus"></i></div>
-
-    <div id="dock">
-        <input type="text" id="u-in" placeholder="Kommentieren..." autocomplete="off" onkeypress="if(event.key==='Enter') sendMsg()">
-        <button class="dock-btn" onclick="togglePanel('gift-panel')" style="background:var(--gold);"><i class="fas fa-gift"></i></button>
-        <button class="dock-btn" onclick="sendMsg()" style="background:var(--mod);"><i class="fas fa-paper-plane"></i></button>
-    </div>
-
-    <div id="guest-panel" class="bottom-panel">
-        <div style="display:flex; justify-content:space-between; align-items:center;"><h3>GÄSTE-ANFRAGEN</h3><i class="fas fa-times" onclick="togglePanel('guest-panel')"></i></div>
-        <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:15px; display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
-            <div style="display:flex; align-items:center; gap:10px;"><img src="https://i.pravatar.cc/100?u=sarah" style="width:40px; border-radius:50%;"><b>Sarah_Live</b></div>
-            <button onclick="acceptGuest('slot-2', 'Sarah_Live', 'sarah')" style="background:var(--mod); color:white; border:none; padding:10px 15px; border-radius:10px;">ANNEHMEN</button>
-        </div>
-    </div>
-
-    <div id="gift-panel" class="bottom-panel">
-        <div style="display:flex; justify-content:space-between; align-items:center;"><h3 style="color:var(--gold)">GIFTS</h3><i class="fas fa-times" onclick="togglePanel('gift-panel')"></i></div>
-        <div class="grid-layout">
-            <div class="g-item" onclick="fireGift('Rose', '🌹', 1)"><div class="g-icon">🌹</div><span>1</span></div>
-            <div class="g-item" onclick="fireGift('Herz', '🫰', 5)"><div class="g-icon">🫰</div><span>5</span></div>
-            <div class="g-item" onclick="fireGift('Diamant', '💎', 25)"><div class="g-icon">💎</div><span>25</span></div>
-            <div class="g-item" onclick="fireGift('Universum', '🪐', 60)"><div class="g-icon">🪐</div><span>60</span></div>
-        </div>
-    </div>
-
-    <div id="gate">
-        <div style="width:80px; height:80px; background:var(--tt-pink); border-radius:20px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; box-shadow: 0 0 30px var(--tt-pink);"><i class="fas fa-crown" style="font-size:40px; color:white;"></i></div>
-        <h1>GLIMPSE V84</h1>
-        <button onclick="launchApp()" style="background:white; color:black; border:none; padding:20px 70px; border-radius:40px; font-weight:900; margin-top:30px;">GO LIVE</button>
-    </div>
-
-    <div id="hud" style="display:none;">
-        <div class="sidebar">
-            <div class="s-btn" onclick="togglePK()"><i class="fas fa-bolt"></i></div>
-            <div class="s-btn" onclick="spawnGhost()"><i class="fas fa-hand-sparkles"></i></div>
-            <div class="s-btn" onclick="toggleThermal()"><i class="fas fa-eye"></i></div>
-            <div class="s-btn" onclick="location.reload()"><i class="fas fa-sync-alt"></i></div>
-        </div>
-    </div>
-
-    <script>
-        let isPK = false, pkScore = 50;
-        const video = document.getElementById('v');
-
-        async function launchApp() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                video.srcObject = stream;
-                setTimeout(() => video.play(), 150);
-                document.getElementById('gate').style.display = 'none';
-                document.getElementById('hud').style.display = 'block';
-                addMsg("System", "Alle Systeme operational. ✅");
-                setInterval(() => { document.getElementById('t-fill').style.width = Math.floor(Math.random()*30+70) + "%"; }, 3000);
-            } catch (e) { alert("Kamera-Zugriff verweigert!"); }
-        }
-
-        function forceStart(e) {
-            if (video.paused && video.srcObject) video.play();
-            if(e.target.tagName !== 'INPUT' && !e.target.closest('.bottom-panel') && !e.target.closest('#dock') && !e.target.closest('.sidebar')) {
-                spawnHeart(e);
-            }
-        }
-
-        function sendMsg() {
-            const input = document.getElementById('u-in');
-            if(input.value.trim() !== "") {
-                addMsg("Du", input.value);
-                input.value = "";
-                if(navigator.vibrate) navigator.vibrate(20);
-                input.focus();
-            }
-        }
-
-        function addMsg(n, t) {
-            const c = document.getElementById('chat');
-            const m = document.createElement('div');
-            m.className = 'msg';
-            m.innerHTML = `<b>${n}:</b> ${t}`;
-            c.appendChild(m);
-            if(c.children.length > 5) c.removeChild(c.firstChild);
-        }
-
-        function togglePanel(id) { document.getElementById(id).classList.toggle('open'); if(navigator.vibrate) navigator.vibrate(25); }
-
-        function acceptGuest(id, name, avatar) {
-            const slot = document.getElementById(id);
-            slot.classList.remove('empty');
-            slot.innerHTML = `<img src="https://i.pravatar.cc/400?u=${avatar}"><div class="slot-name">${name}</div><div style="position:absolute; top:8px; right:8px; background:var(--tt-pink); padding:5px; border-radius:50%; font-size:10px; z-index:15;" onclick="kickGuest('${id}')"><i class="fas fa-user-minus"></i></div>`;
-            togglePanel('guest-panel');
-        }
-
-        function kickGuest(id) {
-            const slot = document.getElementById(id);
-            slot.classList.add('empty');
-            slot.innerHTML = `<div class="slot-name">Warten...</div>`;
-            event.stopPropagation();
-        }
-
-        function fireGift(name, icon, pts) {
-            const pop = document.getElementById('gift-pop');
-            pop.innerHTML = `<h1 style="font-size:60px;">${icon}</h1><p style="color:var(--gold); font-weight:bold; margin-top:10px;">GIFT: ${name.toUpperCase()}!</p>`;
-            pop.style.display = 'block';
-            addMsg("Gift", `Du schickst ${icon} ${name}!`);
-            togglePanel('gift-panel');
-            if(isPK) { pkScore = Math.min(96, pkScore + pts); updatePK(); }
-            if(navigator.vibrate) navigator.vibrate([60, 40, 60]);
-            setTimeout(() => { pop.style.display = 'none'; }, 2200);
-        }
-
-        function togglePK() { isPK = !isPK; document.getElementById('pk-bar').style.display = isPK ? 'block' : 'none'; }
-        function updatePK() { document.getElementById('pk-b').style.width = pkScore + "%"; document.getElementById('pk-r').style.width = (100 - pkScore) + "%"; }
-        function toggleThermal() { video.classList.toggle('thermal'); }
-
-        function spawnGhost() {
-            const g = document.createElement('div'); g.innerHTML = '🖐️';
-            g.style.cssText = "position:absolute; left:40%; bottom:0; font-size:120px; filter:drop-shadow(0 0 30px white); animation: ghostAnim 1.6s forwards; z-index:5000; pointer-events:none;";
-            document.body.appendChild(g); setTimeout(() => g.remove(), 1600);
-        }
-
-        function spawnHeart(e) {
-            const h = document.createElement('div'); h.innerHTML = '❤️';
-            h.style.cssText = `position:absolute; left:${e.clientX}px; top:${e.clientY}px; color:#ff0050; font-size:40px; animation: heartFly 1.5s forwards; z-index:4500; pointer-events:none;`;
-            document.body.appendChild(h); setTimeout(() => h.remove(), 1500);
-            if(isPK) { pkScore = Math.min(96, pkScore + 0.5); updatePK(); }
-            if(navigator.vibrate) navigator.vibrate(15);
-        }
-    </script>
-</body>
-</html>
+<style>
+    @keyframes slideDown {
+        from { transform: translateY(-150%); }
+        to { transform: translateY(0); }
+    }
+</style>
