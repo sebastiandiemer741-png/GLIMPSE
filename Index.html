@@ -3,167 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE V70 | SUPREMACY</title>
+    <title>GLIMPSE V71 | QUAD-TITAN</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --tt-pink: #ff0050; --tt-cyan: #00f2ea; --gold: #ffd700; --mod: #007aff; --truth: #00ff88; --pk-red: #ff2d55; --pk-blue: #007aff; }
+        :root { --tt-pink: #ff0050; --tt-cyan: #00f2ea; --gold: #ffd700; --mod: #007aff; --truth: #00ff88; --pk-blue: #007aff; --pk-red: #ff2d55; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         body, html { height: 100%; background: #000; font-family: -apple-system, sans-serif; color: white; overflow: hidden; position: fixed; width: 100%; }
 
-        /* --- VIDEO & PK ENGINE --- */
-        #v { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); transition: 0.4s; }
+        /* --- QUAD VIDEO GRID --- */
+        #video-grid { position: fixed; inset: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; background: #222; z-index: 1; transition: 0.5s; }
+        .v-slot { position: relative; background: #111; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 0.5px solid rgba(255,255,255,0.1); }
+        .v-slot img { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
+        .v-slot .name-tag { position: absolute; bottom: 5px; left: 5px; background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 5px; font-size: 10px; z-index: 5; }
+
+        /* DEIN VIDEO (Slot 1) */
+        #v { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: 0.5s filter; }
         .thermal { filter: contrast(2) saturate(3) hue-rotate(90deg) invert(1) !important; }
-        .pk-active #v { width: 50%; left: 0; border-right: 2px solid white; transform: scaleX(-1); }
-        #pk-enemy { position: fixed; top: 0; right: 0; width: 50%; height: 100%; background: #111; display: none; z-index: 1; }
-        #pk-enemy img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
+
+        /* --- PK TEAM BAR --- */
+        #team-pk { position: absolute; top: 110px; left: 5%; width: 90%; height: 18px; background: #333; border-radius: 9px; display: none; z-index: 200; overflow: hidden; border: 1.5px solid white; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
+        #team-blue { height: 100%; width: 50%; background: var(--pk-blue); float: left; transition: 0.5s; }
+        #team-red { height: 100%; width: 50%; background: var(--pk-red); float: left; transition: 0.5s; }
 
         /* --- OVERLAYS --- */
         #fx-layer { position: fixed; inset: 0; z-index: 150; pointer-events: none; }
-        #media-pip { position: absolute; top: 140px; right: 60px; width: 90px; height: 130px; background: #000; border: 2px solid var(--tt-cyan); border-radius: 10px; display: none; z-index: 160; overflow: hidden; }
-        
-        /* PK BAR */
-        #pk-bar { position: absolute; top: 110px; left: 10%; width: 80%; height: 20px; background: #333; border-radius: 10px; display: none; z-index: 200; overflow: hidden; border: 1.5px solid white; }
-        #pk-b-fill { height: 100%; width: 50%; background: var(--pk-blue); float: left; transition: 0.5s; }
-        #pk-r-fill { height: 100%; width: 50%; background: var(--pk-red); float: left; transition: 0.5s; }
+        #combo-pop { position: absolute; left: 20px; top: 30%; z-index: 500; display: none; align-items: center; gap: 10px; animation: pop 0.3s cubic-bezier(0.17, 0.89, 0.32, 1.28); }
+        .combo-box { width: 50px; height: 50px; background: linear-gradient(45deg, var(--gold), #ff8c00); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 25px; box-shadow: 0 0 20px var(--gold); }
 
-        /* GIFT COMBO */
-        #combo-wrap { position: absolute; left: 20px; top: 35%; z-index: 500; display: none; align-items: center; gap: 10px; animation: pop 0.3s cubic-bezier(0.17, 0.89, 0.32, 1.28); }
-        .combo-hex { width: 55px; height: 55px; background: linear-gradient(45deg, var(--gold), #ff8c00); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 0 20px var(--gold); }
-        
-        /* HUD */
+        /* --- HUD --- */
         .hud { position: relative; z-index: 100; height: 100%; display: none; flex-direction: column; padding: 50px 15px 20px; }
-        .truth-box { margin-top: 10px; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 10px; width: fit-content; border: 1px solid var(--truth); }
-        #t-fill { height: 4px; width: 80%; background: var(--truth); margin-top: 4px; transition: 1s; box-shadow: 0 0 10px var(--truth); }
+        .truth-box { background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 15px; width: fit-content; margin-top: 10px; border: 1px solid var(--truth); }
+        #t-fill { height: 4px; width: 85%; background: var(--truth); margin-top: 4px; transition: 1s; box-shadow: 0 0 10px var(--truth); }
 
         /* SIDEBAR */
-        .sidebar { position: absolute; right: 10px; top: 140px; display: flex; flex-direction: column; gap: 12px; z-index: 210; }
-        .s-btn { width: 46px; height: 46px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); }
+        .sidebar { position: absolute; right: 10px; top: 160px; display: flex; flex-direction: column; gap: 10px; z-index: 210; }
+        .s-btn { width: 44px; height: 44px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); }
         .s-btn.active { border-color: var(--tt-cyan); color: var(--tt-cyan); }
 
-        /* PANELS */
-        #beauty-panel { position: absolute; bottom: 100px; right: 15px; background: rgba(0,0,0,0.85); padding: 15px; border-radius: 15px; display: none; z-index: 300; width: 140px; border: 1px solid var(--tt-cyan); }
-
         /* CHAT */
-        #chat { position: absolute; bottom: 90px; left: 15px; width: 75%; height: 200px; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; pointer-events: none; }
-        .msg { background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 12px; font-size: 13px; margin-bottom: 5px; animation: slide 0.2s ease; width: fit-content; pointer-events: auto; }
-        .msg b { color: var(--tt-cyan); }
+        #chat { position: absolute; bottom: 90px; left: 15px; width: 75%; height: 180px; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; pointer-events: none; }
+        .msg { background: rgba(0,0,0,0.35); padding: 5px 10px; border-radius: 10px; font-size: 12px; margin-bottom: 4px; animation: slideIn 0.2s; width: fit-content; pointer-events: auto; }
+
+        /* DOCK */
+        .dock { position: fixed; bottom: 0; width: 100%; height: 80px; display: flex; align-items: center; padding: 0 15px; background: linear-gradient(transparent, rgba(0,0,0,0.95)); z-index: 300; }
+        #u-in { flex: 1; background: rgba(255,255,255,0.15); border: none; padding: 10px 18px; border-radius: 20px; color: white; font-size: 14px; outline: none; }
 
         @keyframes pop { from { transform: scale(0) rotate(-20deg); } to { transform: scale(1) rotate(0deg); } }
-        @keyframes slide { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes heartFly { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-450px) scale(3); opacity: 0; } }
-        
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-15px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes hFly { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-400px) scale(3); opacity: 0; } }
+
         #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body onclick="spawnHeart(event)">
 
-    <video id="v" autoplay playsinline muted></video>
+    <div id="video-grid">
+        <div class="v-slot"><video id="v" autoplay playsinline muted></video><div class="name-tag">Du (Host)</div></div>
+        <div class="v-slot"><img src="https://i.pravatar.cc/300?u=a" alt="G1"><div class="name-tag">Sarah_Live</div></div>
+        <div class="v-slot"><img src="https://i.pravatar.cc/300?u=b" alt="G2"><div class="name-tag">Rico_Vibe</div></div>
+        <div class="v-slot"><img src="https://i.pravatar.cc/300?u=c" alt="G3"><div class="name-tag">Tox_99</div></div>
+    </div>
+
     <div id="fx-layer"></div>
-    <div id="pk-enemy"><img src="https://picsum.photos/400/800?u=rival" alt="Rival"></div>
-    <div id="media-pip"><img src="https://picsum.photos/200/300" style="width:100%; height:100%; object-fit:cover;"></div>
+    <div id="team-pk"><div id="team-blue"></div><div id="team-red"></div></div>
 
-    <div id="pk-bar"><div id="pk-b-fill"></div><div id="pk-r-fill"></div></div>
-
-    <div id="combo-wrap">
-        <div class="combo-hex">💎</div>
-        <div style="font-size:35px; font-weight:900; font-style:italic;">x<span id="c-count">1</span></div>
+    <div id="combo-pop">
+        <div class="combo-box">🌹</div>
+        <div style="font-size:30px; font-weight:900;">x<span id="c-count">1</span></div>
     </div>
 
     <div id="gate">
-        <div style="width:80px; height:80px; background:linear-gradient(45deg, var(--tt-pink), var(--mod)); border-radius:25px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; box-shadow: 0 0 30px var(--tt-pink);">
-            <i class="fas fa-crown" style="font-size:40px;"></i>
+        <div style="width:70px; height:70px; background:linear-gradient(45deg, var(--tt-pink), var(--mod)); border-radius:18px; display:flex; align-items:center; justify-content:center; margin-bottom:20px;">
+            <i class="fas fa-users" style="font-size:30px;"></i>
         </div>
-        <h1 style="letter-spacing:10px;">TITAN SUPREMACY</h1>
-        <button onclick="launchV70()" style="background:white; color:black; border:none; padding:18px 60px; border-radius:40px; font-weight:900; margin-top:30px;">GO LIVE</button>
+        <h1 style="letter-spacing:10px;">QUAD TITAN V71</h1>
+        <button onclick="launchQuad()" style="background:white; color:black; border:none; padding:18px 50px; border-radius:35px; font-weight:900; margin-top:25px;">START 4-WAY LIVE</button>
     </div>
 
     <div id="app" class="hud">
         <div style="display:flex; justify-content:space-between; align-items:flex-start;">
             <div>
-                <div style="background:rgba(0,0,0,0.5); padding:5px 12px; border-radius:20px; display:flex; align-items:center; gap:8px;">
-                    <div style="width:25px; height:25px; background:var(--mod); border-radius:50%;"></div>
-                    <div style="font-size:10px;"><b>Sovereign_Live</b> <i class="fas fa-check-circle" style="color:var(--mod)"></i></div>
+                <div style="background:rgba(0,0,0,0.5); padding:4px 12px; border-radius:15px; font-size:10px; display:flex; align-items:center; gap:5px;">
+                    <b>OMNI_HOST</b> <i class="fas fa-crown" style="color:var(--gold)"></i>
                 </div>
                 <div class="truth-box">
                     <div style="font-size:7px; font-weight:bold; color:var(--truth);">AUTHENTIZITÄT</div>
                     <div id="t-fill"></div>
                 </div>
             </div>
-            <div onclick="location.reload()" style="font-size:22px; background:rgba(0,0,0,0.5); padding:10px; border-radius:50%;"><i class="fas fa-power-off"></i></div>
-        </div>
-
-        <div id="beauty-panel">
-            <p style="font-size:9px; margin-bottom:8px;">BEAUTY: <span id="b-val">0</span>%</p>
-            <input type="range" min="0" max="100" value="0" style="width:100%;" oninput="applyBeauty(this.value)">
+            <div onclick="location.reload()" style="font-size:20px; background:rgba(0,0,0,0.5); padding:8px; border-radius:50%;"><i class="fas fa-power-off"></i></div>
         </div>
 
         <div class="sidebar">
-            <div class="s-btn" onclick="togglePK()" id="pk-btn"><i class="fas fa-bolt"></i></div>
+            <div class="s-btn" onclick="toggleQuadPK()" id="pk-btn"><i class="fas fa-bolt"></i></div>
             <div class="s-btn" onclick="triggerCombo()"><i class="fas fa-gift" style="color:var(--gold)"></i></div>
             <div class="s-btn" onclick="spawnGhost()"><i class="fas fa-hand-sparkles"></i></div>
             <div class="s-btn" onclick="toggleThermal()" id="th-btn"><i class="fas fa-eye"></i></div>
-            <div class="s-btn" onclick="toggleMedia()"><i class="fas fa-clone"></i></div>
-            <div class="s-btn" onclick="toggleBeauty()"><i class="fas fa-wand-magic-sparkles"></i></div>
+            <div class="s-btn" onclick="alert('Alle Gäste stummgeschaltet 🔇')"><i class="fas fa-microphone-slash"></i></div>
+            <div class="s-btn" onclick="alert('Filter-Sync aktiv ✨')"><i class="fas fa-wand-magic-sparkles"></i></div>
         </div>
 
         <div id="chat"></div>
 
         <form class="dock" onsubmit="sendChat(event)">
-            <input type="text" id="u-in" placeholder="Sag etwas..." autocomplete="off">
-            <button type="submit" style="background:none; border:none; color:var(--tt-cyan); margin-left:15px; font-size:22px;"><i class="fas fa-paper-plane"></i></button>
+            <input type="text" id="u-in" placeholder="Nachricht ans Panel..." autocomplete="off">
+            <button type="submit" style="background:none; border:none; color:var(--tt-cyan); margin-left:12px; font-size:20px;"><i class="fas fa-paper-plane"></i></button>
         </form>
     </div>
 
     <script>
         let isPK = false, isThermal = false, combo = 0, pkScore = 50;
 
-        async function launchV70() {
+        async function launchQuad() {
             try {
                 const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 document.getElementById('v').srcObject = s;
                 document.getElementById('gate').style.display = 'none';
                 document.getElementById('app').style.display = 'flex';
                 runEngines();
-            } catch (e) { alert("Cam Error."); }
+            } catch (e) { alert("Zugriff verweigert."); }
         }
 
         function runEngines() {
-            setInterval(() => { document.getElementById('t-fill').style.width = Math.floor(Math.random() * 30 + 70) + "%"; }, 3000);
-            const users = ["Rico", "Sarah", "Guardian", "Tox", "Lia"];
-            const words = ["PK Win!", "Ghost Hand!", "🛡️ Clean Chat", "💎 G-Power!", "Mega Stream"];
+            setInterval(() => { document.getElementById('t-fill').style.width = Math.floor(Math.random() * 20 + 80) + "%"; }, 3000);
+            const names = ["Sarah_Live", "Rico_Vibe", "Tox_99", "Moni", "Lukas"];
+            const words = ["Krasses 4er Panel!", "Team Blau gewinnen!", "🛡️ Ordnung!", "Geschenke spammen!", "Hi Host!"];
             setInterval(() => {
                 const chat = document.getElementById('chat'), m = document.createElement('div');
                 m.className = 'msg';
-                m.innerHTML = `<b>${users[Math.floor(Math.random()*5)]}:</b> ${words[Math.floor(Math.random()*5)]}`;
+                m.innerHTML = `<b>${names[Math.floor(Math.random()*5)]}:</b> ${words[Math.floor(Math.random()*5)]}`;
                 chat.appendChild(m);
-                if(chat.children.length > 6) chat.removeChild(chat.firstChild);
-                if(isPK && Math.random() > 0.7) { pkScore = Math.max(pkScore - 4, 5); updatePK(); }
-            }, 2500);
+                if(chat.children.length > 5) chat.removeChild(chat.firstChild);
+                if(isPK && Math.random() > 0.6) { pkScore = Math.max(pkScore - 3, 10); updatePK(); }
+            }, 2000);
         }
 
-        function togglePK() {
+        function toggleQuadPK() {
             isPK = !isPK;
-            document.body.classList.toggle('pk-active');
-            document.getElementById('pk-enemy').style.display = isPK ? 'block' : 'none';
-            document.getElementById('pk-bar').style.display = isPK ? 'block' : 'none';
+            document.getElementById('team-pk').style.display = isPK ? 'block' : 'none';
             document.getElementById('pk-btn').style.background = isPK ? 'var(--pk-red)' : 'rgba(0,0,0,0.6)';
             if(navigator.vibrate) navigator.vibrate(100);
         }
 
         function triggerCombo() {
             combo++;
-            const wrap = document.getElementById('combo-wrap');
+            const wrap = document.getElementById('combo-pop');
             document.getElementById('c-count').innerText = combo;
             wrap.style.display = 'flex';
-            if(isPK) { pkScore = Math.min(pkScore + 6, 95); updatePK(); }
+            if(isPK) { pkScore = Math.min(pkScore + 8, 90); updatePK(); }
             if(navigator.vibrate) navigator.vibrate(20);
             clearTimeout(window.ct);
             window.ct = setTimeout(() => { wrap.style.display = 'none'; combo = 0; }, 2000);
         }
 
         function updatePK() {
-            document.getElementById('pk-b-fill').style.width = pkScore + "%";
-            document.getElementById('pk-r-fill').style.width = (100 - pkScore) + "%";
+            document.getElementById('team-blue').style.width = pkScore + "%";
+            document.getElementById('team-red').style.width = (100 - pkScore) + "%";
         }
 
         function toggleThermal() {
@@ -172,25 +167,10 @@
             document.getElementById('th-btn').classList.toggle('active');
         }
 
-        function toggleMedia() {
-            const pip = document.getElementById('media-pip');
-            pip.style.display = pip.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function toggleBeauty() {
-            const p = document.getElementById('beauty-panel');
-            p.style.display = p.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function applyBeauty(val) {
-            document.getElementById('b-val').innerText = val;
-            document.getElementById('v').style.filter = `blur(${val/40}px) brightness(1.05) ${isThermal ? 'contrast(2) saturate(3) hue-rotate(90deg) invert(1)' : ''}`;
-        }
-
         function spawnGhost() {
             const g = document.createElement('div');
             g.innerHTML = '🖐️';
-            g.style.cssText = "position:absolute; left:40%; bottom:0; font-size:100px; filter:drop-shadow(0 0 20px white); animation: ghost 1.5s forwards; z-index:150;";
+            g.style.cssText = "position:absolute; left:40%; bottom:0; font-size:100px; filter:drop-shadow(0 0 20px white); animation: ghostMove 1.5s forwards; z-index:150;";
             document.getElementById('fx-layer').appendChild(g);
             if(navigator.vibrate) navigator.vibrate([100,50,100]);
             setTimeout(() => g.remove(), 1500);
@@ -200,7 +180,7 @@
             if(e.target.tagName === 'INPUT' || e.target.closest('.sidebar')) return;
             const h = document.createElement('div');
             h.innerHTML = '<i class="fas fa-heart"></i>';
-            h.style.cssText = `position:absolute; left:${e.clientX}px; top:${e.clientY}px; color:#ff0050; font-size:30px; animation: heartFly 1.2s forwards; z-index:500;`;
+            h.style.cssText = `position:absolute; left:${e.clientX}px; top:${e.clientY}px; color:#ff0050; font-size:30px; animation: hFly 1.2s forwards; z-index:500;`;
             document.getElementById('fx-layer').appendChild(h);
             if(navigator.vibrate) navigator.vibrate(15);
             setTimeout(() => h.remove(), 1200);
@@ -211,11 +191,11 @@
             const i = document.getElementById('u-in');
             if(!i.value) return;
             const chat = document.getElementById('chat'), m = document.createElement('div');
-            m.className = 'msg'; m.style.background = 'rgba(255,255,255,0.1)';
-            m.innerHTML = `<b>Du:</b> ${i.value}`;
+            m.className = 'msg'; m.style.background = 'rgba(0,122,255,0.2)';
+            m.innerHTML = `<b>Host:</b> ${i.value}`;
             chat.appendChild(m); i.value = ""; i.blur();
         }
     </script>
-    <style> @keyframes ghost { 0% { transform: translateY(500px) scale(0.5); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(-200px) scale(2); opacity: 0; } } </style>
+    <style> @keyframes ghostMove { 0% { transform: translateY(500px) scale(0.5); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(-200px) scale(2); opacity: 0; } } </style>
 </body>
 </html>
