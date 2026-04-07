@@ -3,179 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE V110 | JUDGMENT</title>
+    <title>GLIMPSE V115 | ULTIMATE</title>
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --tt-red: #ff0050; --tt-cyan: #00f2ea; --glass: rgba(0,0,0,0.5); }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        body, html { height: 100%; background: #000; font-family: -apple-system, system-ui, sans-serif; color: white; overflow: hidden; position: fixed; width: 100%; }
+        body, html { height: 100%; background: #000; font-family: -apple-system, sans-serif; color: white; overflow: hidden; position: fixed; width: 100%; }
 
-        /* EBENE 1: DYNAMISCHES LAYOUT (Übersetzung deiner buildLiveLayout Logik) */
-        #court-container { 
-            position: fixed; inset: 0; z-index: 1; 
-            display: flex; flex-direction: column; /* Flutter Column Widget */
-            background: #000; 
-        }
-        .video-slot { 
-            flex: 1; position: relative; overflow: hidden; 
-            background: #111; transition: all 0.4s ease;
-        }
-        #local-player { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: filter 0.3s; }
-        .remote-player-view { width: 100%; height: 100%; object-fit: cover; }
+        /* VIDEO COURT */
+        #court { position: fixed; inset: 0; z-index: 1; display: flex; flex-direction: column; background: #111; }
+        .slot { flex: 1; position: relative; overflow: hidden; background: #000; transition: all 0.4s ease; }
+        #local-player { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        .remote-player { width: 100%; height: 100%; object-fit: cover; }
 
-        /* EBENE 2: BEAUTY FILTER (Deine setBeautyEffectOptions Logik) */
-        .beauty-active { filter: brightness(1.1) contrast(0.9) saturate(1.1) blur(0.4px); }
+        /* PK BATTLE BAR */
+        #pk-bar { display: none; position: fixed; top: env(safe-area-inset-top, 20px); left: 50px; right: 50px; height: 10px; background: blue; border-radius: 5px; overflow: hidden; z-index: 90; border: 1.5px solid white; }
+        #pk-progress { width: 50%; height: 100%; background: red; transition: width 0.3s ease; }
 
-        /* EBENE 3: UI OVERLAY (Stack-Logik) */
-        #ui-overlay { position: fixed; inset: 0; z-index: 10; pointer-events: none; padding: 20px; display: flex; flex-direction: column; }
-        
-        /* Oben: Streamer Info & LIVE Badge */
-        #top-hud { display: flex; align-items: center; gap: 10px; margin-top: env(safe-area-inset-top); pointer-events: auto; }
-        .host-pill { background: var(--glass); padding: 5px 15px 5px 5px; border-radius: 25px; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(15px); }
-        .avatar-circle { width: 34px; height: 34px; border-radius: 50%; background: var(--tt-red); display: flex; align-items: center; justify-content: center; border: 1.5px solid white; }
-        .live-tag { background: var(--tt-red); padding: 5px 12px; border-radius: 6px; font-weight: 800; font-size: 12px; margin-left: auto; box-shadow: 0 0 10px rgba(255,0,80,0.5); }
+        /* UI-HUD */
+        #hud-stack { position: fixed; inset: 0; z-index: 100; pointer-events: none; display: flex; flex-direction: column; }
+        #top-zone { display: flex; align-items: center; gap: 10px; padding: 20px; margin-top: calc(env(safe-area-inset-top, 20px) + 15px); pointer-events: auto; }
+        .host-pill { background: var(--glass); padding: 5px 15px 5px 5px; border-radius: 25px; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(10px); }
+        .live-badge { background: var(--tt-red); padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: 800; margin-left: auto; }
 
-        /* Unten: Chat (ListView reverse) */
-        #chat-window { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; margin-bottom: 95px; width: 75%; }
-        .chat-bubble { background: rgba(0,0,0,0.35); padding: 8px 14px; border-radius: 14px; font-size: 15px; margin-bottom: 6px; width: fit-content; backdrop-filter: blur(10px); border-left: 3px solid var(--tt-cyan); animation: slideIn 0.25s forwards; }
+        #chat-flow { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; margin-bottom: 90px; padding-left: 15px; width: 75%; }
+        .m { background: rgba(0,0,0,0.35); padding: 7px 12px; border-radius: 12px; margin-bottom: 6px; font-size: 14px; width: fit-content; backdrop-filter: blur(8px); border-left: 3px solid var(--tt-cyan); animation: msgIn 0.25s forwards; }
 
-        /* Rechts: Interaktions-Buttons */
-        #side-actions { position: absolute; right: 15px; bottom: 135px; display: flex; flex-direction: column; align-items: center; gap: 24px; pointer-events: auto; }
-        .action-btn { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
-        .action-btn i { font-size: 34px; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
-        .action-btn span { font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        #sidebar { position: absolute; right: 15px; bottom: 130px; display: flex; flex-direction: column; align-items: center; gap: 20px; pointer-events: auto; }
+        .s-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .s-item i { font-size: 30px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.6)); }
 
-        /* Ganz unten: Input */
-        #bottom-dock { position: fixed; bottom: 30px; left: 15px; right: 15px; display: flex; gap: 12px; pointer-events: auto; }
-        #chat-input { flex: 1; background: rgba(255,255,255,0.22); border: none; padding: 15px 22px; border-radius: 30px; color: white; outline: none; font-size: 16px; backdrop-filter: blur(20px); border: 0.5px solid rgba(255,255,255,0.1); }
-        .send-icon { width: 52px; height: 52px; background: var(--tt-cyan); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: black; border: none; font-size: 20px; }
+        #input-dock { position: fixed; bottom: 25px; left: 15px; right: 15px; display: flex; gap: 10px; pointer-events: auto; }
+        #in { flex: 1; background: rgba(255,255,255,0.2); border: none; padding: 15px 22px; border-radius: 30px; color: white; outline: none; font-size: 16px; backdrop-filter: blur(15px); }
+        .btn-send { width: 50px; height: 50px; background: var(--tt-cyan); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: black; border: none; font-size: 20px; }
 
-        /* Gate / Permission Handler Screen */
-        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        #gate button { background: white; color: black; border: none; padding: 22px 75px; border-radius: 45px; font-weight: 900; font-size: 19px; margin-top: 30px; letter-spacing: 1px; }
-
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+        /* SHOP ANIMATION */
+        @keyframes msgIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body onclick="kickstartAudio()">
+<body onclick="kickstart()">
 
-    <div id="court-container">
-        <div class="video-slot" id="slot-host">
-            <div id="local-player"></div>
-        </div>
-        <div class="video-slot" id="slot-guest" style="display: none;">
-            <div id="remote-player-view" class="remote-player-view"></div>
-        </div>
+    <div id="court">
+        <div class="slot"><div id="local-player"></div></div>
+        <div class="slot" id="slot-guest" style="display: none;"><div id="remote-player-view" class="remote-player"></div></div>
     </div>
 
-    <div id="ui-overlay">
-        <div id="top-hud">
+    <div id="pk-bar"><div id="pk-progress"></div></div>
+
+    <div id="hud-stack">
+        <div id="top-zone">
             <div class="host-pill">
-                <div class="avatar-circle"><i class="fas fa-user"></i></div>
-                <div>
-                    <p style="font-weight:bold; font-size:13px;">Live-Streamer</p>
-                    <p style="font-size:11px; opacity:0.8;">1.2k Zuschauer</p>
-                </div>
+                <div style="width:32px; height:32px; border-radius:50%; background:var(--tt-red); border:1px solid white;"></div>
+                <div><p style="font-weight:bold; font-size:12px;">Live-Host</p><p style="font-size:10px; opacity:0.8;">1.2k Zuschauer</p></div>
             </div>
-            <div class="live-tag">LIVE</div>
+            <div class="live-badge">LIVE</div>
         </div>
-
-        <div id="chat-window"></div>
-
-        <div id="side-actions">
-            <div class="action-btn" onclick="toggleBeauty()"><i class="fas fa-magic" style="color:white;"></i><span>Filter</span></div>
-            <div class="action-btn" onclick="toggleSplitScreen()"><i class="fas fa-user-plus" style="color:var(--tt-cyan);"></i><span>Gast</span></div>
-            <div class="action-btn" onclick="sendGift()"><i class="fas fa-gift" style="color:#face15;"></i><span>Gift</span></div>
-            <div class="action-btn" onclick="location.reload()"><i class="fas fa-sync-alt" style="font-size: 25px; margin-top: 10px;"></i></div>
+        <div id="chat-flow"></div>
+        <div id="sidebar">
+            <div class="s-item" onclick="pinProduct('Exclusive Glimpse Hoodie', '49')"><i class="fas fa-shopping-cart" style="color:#face15;"></i><span>Shop</span></div>
+            <div class="s-item" onclick="sendGift()"><i class="fas fa-gift" style="color:#face15;"></i><span>Gift</span></div>
+            <div class="s-item" onclick="location.reload()"><i class="fas fa-sync-alt" style="color:white; margin-top:10px;"></i></div>
         </div>
-
-        <div id="bottom-dock">
-            <input type="text" id="chat-input" placeholder="Sag etwas..." onkeypress="if(event.key==='Enter') sendMessage()">
-            <button class="send-icon" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+        <div id="input-dock">
+            <input type="text" id="in" placeholder="Sag etwas..." onkeypress="if(event.key==='Enter') send()">
+            <button class="btn-send" onclick="send()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
-    <div id="gate">
-        <i class="fab fa-tiktok" style="font-size:75px; margin-bottom:15px;"></i>
-        <h2 style="letter-spacing:5px;">GLIMPSE V110</h2>
-        <p style="opacity:0.5; font-size:13px; margin-top:12px;">AGORA RTC ENGINE & SPLIT-COURT READY</p>
-        <button onclick="initAgoraLive()">GO LIVE</button>
+    <div id="gate" style="position:fixed; inset:0; background:#000; z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+        <i class="fab fa-tiktok" style="font-size:60px; margin-bottom:10px;"></i>
+        <h2>GLIMPSE V115</h2>
+        <button onclick="setupLiveStream()" style="background:white; color:black; border:none; padding:20px 70px; border-radius:40px; font-weight:900; font-size:18px; margin-top:20px;">INITIALIZE LIVE</button>
     </div>
 
     <script>
         let localTracks = { videoTrack: null, audioTrack: null };
-        let isBeautyOn = false;
+        let hostScore = 50;
+        const client = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
 
-        // ÜBERSETZUNG DEINER INIT-LOGIK
-        async function initAgoraLive() {
+        // --- DEIN NEUER CODE: HEARTBEAT ---
+        function startHeartbeat(uid) {
+            setInterval(async () => {
+                // Konsole meldet den Status (später für API-Request bereit)
+                console.log(`Heartbeat gesendet für User: ${uid} - Status: streaming`);
+                // Hier würde der fetch() stehen
+            }, 10000);
+        }
+
+        // --- ZUSCHAUER SIMULATION ---
+        function startViewerSimulation() {
+            let viewers = 1200;
+            setInterval(() => {
+                viewers += Math.floor(Math.random() * 10) - 4; 
+                document.querySelector('.host-pill p:last-child').innerText = (viewers / 1000).toFixed(1) + "k Zuschauer";
+            }, 3000);
+        }
+
+        // --- PRODUKT PINNING ---
+        function pinProduct(name, price) {
+            const shopWidget = document.createElement('div');
+            shopWidget.style = "position:fixed; top:135px; left:15px; background:white; color:black; padding:10px; border-radius:12px; display:flex; gap:10px; align-items:center; z-index:2000; animation: msgIn 0.5s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); pointer-events:auto;";
+            shopWidget.innerHTML = `
+                <div style="font-size:20px;">👕</div>
+                <div><p style="font-weight:bold; font-size:11px; margin:0;">${name}</p><p style="color:#ff0050; font-size:11px; font-weight:bold; margin:0;">${price}€</p></div>
+                <button style="background:#ff0050; color:white; border:none; padding:5px 10px; border-radius:6px; font-size:10px; font-weight:bold;">Kaufen</button>
+            `;
+            document.body.appendChild(shopWidget);
+            setTimeout(() => shopWidget.remove(), 10000); 
+            pushMsg("Shop", `Angebot: ${name}`);
+        }
+
+        async function setupLiveStream() {
             try {
-                // Permission Request (Kamera & Mikro)
                 [localTracks.audioTrack, localTracks.videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-                
                 document.getElementById('gate').style.display = 'none';
                 localTracks.videoTrack.play("local-player");
 
-                pushMsg("System", "Verbindung hergestellt. Broadcaster aktiv. 🚀");
-            } catch (e) {
-                alert("ZUGRIFF VERWEIGERT: Bitte Kamera-Rechte in Safari erlauben!");
-            }
+                const APP_ID = "DEINE_APP_ID"; 
+                await client.setClientRole("host");
+                const uid = await client.join(APP_ID, "glimpse_live", null, null);
+                await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
+
+                pushMsg("System", "Stream bereit. Heartbeat aktiv.");
+                
+                // --- STARTE HEARTBEAT & SIMULATION ---
+                startHeartbeat(uid);
+                startViewerSimulation(); 
+
+            } catch (e) { console.error(e); }
         }
 
-        function kickstartAudio() { AgoraRTC.onAudioAutoplayFailed = () => { console.log("Audio kickstart"); }; }
-
-        // DEINE LOGIK: buildLiveLayout (Split Screen Toggle)
-        function toggleSplitScreen() {
-            const guestSlot = document.getElementById('slot-guest');
-            const isGuestVisible = guestSlot.style.display === 'block';
-
-            if (!isGuestVisible) {
-                // if (remoteUids.isNotEmpty)
-                guestSlot.style.display = 'block';
-                document.getElementById('remote-player-view').innerHTML = '<img src="https://i.pravatar.cc/600?u=guest" style="width:100%; height:100%; object-fit:cover;">';
-                pushMsg("System", "Gast beigetreten. Split-Screen aktiv.");
-            } else {
-                // else (remoteUids.isEmpty)
-                guestSlot.style.display = 'none';
-                pushMsg("System", "Gast verlassen. Vollbild aktiv.");
+        // AGORA EVENT HANDLING
+        client.on("user-published", async (user, mediaType) => {
+            await client.subscribe(user, mediaType);
+            if (mediaType === "video") {
+                document.getElementById('slot-guest').style.display = 'block';
+                user.videoTrack.play("remote-player-view");
+                document.getElementById('pk-bar').style.display = 'block';
             }
+            if (mediaType === "audio") user.audioTrack.play();
+        });
+
+        function send() { 
+            const i = document.getElementById('in'); 
+            if(i.value.trim()){ pushMsg("Du", i.value); i.value = ""; } 
         }
 
-        // DEINE LOGIK: setBeautyEffectOptions
-        function toggleBeauty() {
-            isBeautyOn = !isBeautyOn;
-            const player = document.getElementById('local-player');
-            if(isBeautyOn) {
-                player.classList.add('beauty-active');
-                pushMsg("AI", "Beauty-Filter (Hautglättung) aktiv ✨");
-                if(navigator.vibrate) navigator.vibrate(60);
-            } else {
-                player.classList.remove('beauty-active');
-                pushMsg("AI", "Filter deaktiviert.");
-            }
+        function pushMsg(u, t) {
+            const f = document.getElementById('chat-flow');
+            const m = document.createElement('div');
+            m.className = 'm';
+            m.innerHTML = `<span style="color:var(--tt-cyan)">${u}:</span> ${t}`;
+            f.appendChild(m);
+            if(f.children.length > 6) f.removeChild(f.firstChild);
         }
 
-        function sendMessage() {
-            const input = document.getElementById('chat-input');
-            if(input.value.trim()) {
-                pushMsg("User", input.value);
-                input.value = "";
-            }
-        }
-
-        function pushMsg(user, text) {
-            const list = document.getElementById('chat-window');
-            const div = document.createElement('div');
-            div.className = 'chat-bubble';
-            div.innerHTML = `<b style="color:var(--tt-cyan)">${user}:</b> ${text}`;
-            list.appendChild(div);
-            if(list.children.length > 7) list.removeChild(list.firstChild);
+        function updateBattle(points) {
+            hostScore = Math.max(10, Math.min(90, hostScore + points));
+            document.getElementById('pk-progress').style.width = hostScore + "%";
         }
 
         function sendGift() {
-            pushMsg("User", "sendet ein GESCHENK! 🎁🪐");
+            pushMsg("GIFT", "hat ein GESCHENK gesendet! 🎁");
+            updateBattle(5);
             if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
         }
+
+        function kickstart() { AgoraRTC.onAudioAutoplayFailed = () => {}; }
     </script>
 </body>
 </html>
