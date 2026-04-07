@@ -3,148 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE V108 | SUPREME</title>
+    <title>GLIMPSE V110 | JUDGMENT</title>
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --tt-red: #ff0050; --tt-cyan: #00f2ea; --glass: rgba(0,0,0,0.4); }
+        :root { --tt-red: #ff0050; --tt-cyan: #00f2ea; --glass: rgba(0,0,0,0.5); }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         body, html { height: 100%; background: #000; font-family: -apple-system, system-ui, sans-serif; color: white; overflow: hidden; position: fixed; width: 100%; }
 
-        /* EBENE 1: VOLLBILD-VIDEO (Agora RTC) */
-        #video-layer { position: fixed; inset: 0; z-index: 1; background: #0a0a0a; }
-        #local-player { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        /* EBENE 1: DYNAMISCHES LAYOUT (Übersetzung deiner buildLiveLayout Logik) */
+        #court-container { 
+            position: fixed; inset: 0; z-index: 1; 
+            display: flex; flex-direction: column; /* Flutter Column Widget */
+            background: #000; 
+        }
+        .video-slot { 
+            flex: 1; position: relative; overflow: hidden; 
+            background: #111; transition: all 0.4s ease;
+        }
+        #local-player { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); transition: filter 0.3s; }
+        .remote-player-view { width: 100%; height: 100%; object-fit: cover; }
 
-        /* EBENE 2: BEAUTY EFFECT (Simuliert dein Flutter BeautyOptions Widget) */
-        .beauty-on { filter: brightness(1.15) contrast(0.9) saturate(1.1) blur(0.5px) sepia(0.05); }
+        /* EBENE 2: BEAUTY FILTER (Deine setBeautyEffectOptions Logik) */
+        .beauty-active { filter: brightness(1.1) contrast(0.9) saturate(1.1) blur(0.4px); }
 
-        /* EBENE 3: GRADIENT OVERLAY */
-        #gradient { position: fixed; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 45%, rgba(0,0,0,0.3) 100%); z-index: 2; pointer-events: none; }
+        /* EBENE 3: UI OVERLAY (Stack-Logik) */
+        #ui-overlay { position: fixed; inset: 0; z-index: 10; pointer-events: none; padding: 20px; display: flex; flex-direction: column; }
+        
+        /* Oben: Streamer Info & LIVE Badge */
+        #top-hud { display: flex; align-items: center; gap: 10px; margin-top: env(safe-area-inset-top); pointer-events: auto; }
+        .host-pill { background: var(--glass); padding: 5px 15px 5px 5px; border-radius: 25px; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(15px); }
+        .avatar-circle { width: 34px; height: 34px; border-radius: 50%; background: var(--tt-red); display: flex; align-items: center; justify-content: center; border: 1.5px solid white; }
+        .live-tag { background: var(--tt-red); padding: 5px 12px; border-radius: 6px; font-weight: 800; font-size: 12px; margin-left: auto; box-shadow: 0 0 10px rgba(255,0,80,0.5); }
 
-        /* EBENE 4: TOP HUD (Streamer Info aus deinem Code) */
-        #top-hud { position: absolute; top: env(safe-area-inset-top, 20px); left: 15px; right: 15px; display: flex; align-items: center; z-index: 100; pointer-events: none; }
-        .host-card { background: var(--glass); padding: 4px 12px 4px 4px; border-radius: 25px; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(10px); pointer-events: auto; }
-        .host-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--tt-red); display: flex; align-items: center; justify-content: center; border: 1.5px solid white; }
-        .live-badge { background: var(--tt-red); padding: 4px 10px; border-radius: 5px; font-weight: 800; font-size: 12px; margin-left: auto; pointer-events: auto; }
+        /* Unten: Chat (ListView reverse) */
+        #chat-window { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; margin-bottom: 95px; width: 75%; }
+        .chat-bubble { background: rgba(0,0,0,0.35); padding: 8px 14px; border-radius: 14px; font-size: 15px; margin-bottom: 6px; width: fit-content; backdrop-filter: blur(10px); border-left: 3px solid var(--tt-cyan); animation: slideIn 0.25s forwards; }
 
-        /* EBENE 5: CHAT (ListView.builder reverse Logik) */
-        #chat-list { position: absolute; bottom: 110px; left: 15px; width: 70%; height: 220px; display: flex; flex-direction: column; justify-content: flex-end; pointer-events: none; z-index: 50; }
-        .chat-entry { background: rgba(0,0,0,0.35); padding: 7px 14px; margin-bottom: 6px; border-radius: 12px; font-size: 14px; width: fit-content; backdrop-filter: blur(8px); border-left: 3.5px solid var(--tt-cyan); animation: msgIn 0.25s ease-out; }
+        /* Rechts: Interaktions-Buttons */
+        #side-actions { position: absolute; right: 15px; bottom: 135px; display: flex; flex-direction: column; align-items: center; gap: 24px; pointer-events: auto; }
+        .action-btn { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
+        .action-btn i { font-size: 34px; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
+        .action-btn span { font-size: 10px; font-weight: 700; text-transform: uppercase; }
 
-        /* EBENE 6: SIDE BUTTONS (Rechte Button-Leiste) */
-        #side-actions { position: absolute; right: 15px; bottom: 130px; display: flex; flex-direction: column; align-items: center; gap: 22px; z-index: 100; }
-        .side-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
-        .side-btn i { font-size: 32px; color: white; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.6)); }
-        .side-btn span { font-size: 10px; font-weight: 600; text-transform: uppercase; }
-
-        /* EBENE 7: INPUT FIELD */
-        #input-dock { position: fixed; bottom: 30px; left: 15px; right: 15px; display: flex; gap: 12px; z-index: 1000; }
+        /* Ganz unten: Input */
+        #bottom-dock { position: fixed; bottom: 30px; left: 15px; right: 15px; display: flex; gap: 12px; pointer-events: auto; }
         #chat-input { flex: 1; background: rgba(255,255,255,0.22); border: none; padding: 15px 22px; border-radius: 30px; color: white; outline: none; font-size: 16px; backdrop-filter: blur(20px); border: 0.5px solid rgba(255,255,255,0.1); }
-        .send-trigger { width: 50px; height: 50px; background: var(--tt-cyan); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: black; border: none; font-size: 20px; }
+        .send-icon { width: 52px; height: 52px; background: var(--tt-cyan); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: black; border: none; font-size: 20px; }
 
-        /* INITIAL GATE (Permission Handler) */
+        /* Gate / Permission Handler Screen */
         #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        #gate button { background: white; color: black; border: none; padding: 20px 70px; border-radius: 40px; font-weight: 900; font-size: 18px; margin-top: 30px; letter-spacing: 1px; }
+        #gate button { background: white; color: black; border: none; padding: 22px 75px; border-radius: 45px; font-weight: 900; font-size: 19px; margin-top: 30px; letter-spacing: 1px; }
 
-        @keyframes msgIn { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
-<body onclick="forceAudio()">
+<body onclick="kickstartAudio()">
 
-    <div id="video-layer">
-        <div id="local-player"></div>
-    </div>
-
-    <div id="gradient"></div>
-
-    <div id="top-hud">
-        <div class="host-card">
-            <div class="host-avatar"><i class="fas fa-user"></i></div>
-            <div>
-                <p style="font-weight:bold; font-size:13px;">Live-Streamer</p>
-                <p style="font-size:10px; opacity:0.8;">1.2k Zuschauer</p>
-            </div>
+    <div id="court-container">
+        <div class="video-slot" id="slot-host">
+            <div id="local-player"></div>
         </div>
-        <div class="live-badge">LIVE</div>
+        <div class="video-slot" id="slot-guest" style="display: none;">
+            <div id="remote-player-view" class="remote-player-view"></div>
+        </div>
     </div>
 
-    <div id="chat-list"></div>
+    <div id="ui-overlay">
+        <div id="top-hud">
+            <div class="host-pill">
+                <div class="avatar-circle"><i class="fas fa-user"></i></div>
+                <div>
+                    <p style="font-weight:bold; font-size:13px;">Live-Streamer</p>
+                    <p style="font-size:11px; opacity:0.8;">1.2k Zuschauer</p>
+                </div>
+            </div>
+            <div class="live-tag">LIVE</div>
+        </div>
 
-    <div id="side-actions">
-        <div class="side-btn" onclick="applyBeauty()"><i class="fas fa-magic"></i><span>Filter</span></div>
-        <div class="side-btn" onclick="fireGift()"><i class="fas fa-gift" style="color:#face15;"></i><span>Geschenk</span></div>
-        <div class="side-btn"><i class="fas fa-share"></i><span>Teilen</span></div>
-        <div class="side-btn" onclick="location.reload()"><i class="fas fa-sync-alt" style="font-size: 24px; margin-top: 10px;"></i></div>
-    </div>
+        <div id="chat-window"></div>
 
-    <div id="input-dock">
-        <input type="text" id="chat-input" placeholder="Sag etwas..." onkeypress="if(event.key==='Enter') send()">
-        <button class="send-trigger" onclick="send()"><i class="fas fa-paper-plane"></i></button>
+        <div id="side-actions">
+            <div class="action-btn" onclick="toggleBeauty()"><i class="fas fa-magic" style="color:white;"></i><span>Filter</span></div>
+            <div class="action-btn" onclick="toggleSplitScreen()"><i class="fas fa-user-plus" style="color:var(--tt-cyan);"></i><span>Gast</span></div>
+            <div class="action-btn" onclick="sendGift()"><i class="fas fa-gift" style="color:#face15;"></i><span>Gift</span></div>
+            <div class="action-btn" onclick="location.reload()"><i class="fas fa-sync-alt" style="font-size: 25px; margin-top: 10px;"></i></div>
+        </div>
+
+        <div id="bottom-dock">
+            <input type="text" id="chat-input" placeholder="Sag etwas..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button class="send-icon" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+        </div>
     </div>
 
     <div id="gate">
-        <i class="fab fa-tiktok" style="font-size:70px; margin-bottom:10px;"></i>
-        <h2 style="letter-spacing:4px;">GLIMPSE SUPREME</h2>
-        <p style="opacity:0.5; font-size:12px; margin-top:10px;">AGORA RTC CORE & BEAUTY ENGINE</p>
-        <button onclick="initFullStackLive()">GO LIVE</button>
+        <i class="fab fa-tiktok" style="font-size:75px; margin-bottom:15px;"></i>
+        <h2 style="letter-spacing:5px;">GLIMPSE V110</h2>
+        <p style="opacity:0.5; font-size:13px; margin-top:12px;">AGORA RTC ENGINE & SPLIT-COURT READY</p>
+        <button onclick="initAgoraLive()">GO LIVE</button>
     </div>
 
     <script>
         let localTracks = { videoTrack: null, audioTrack: null };
-        let beautyActive = false;
+        let isBeautyOn = false;
 
-        // ÜBERSETZUNG DEINER FLUTTER INIT-LOGIK
-        async function initFullStackLive() {
+        // ÜBERSETZUNG DEINER INIT-LOGIK
+        async function initAgoraLive() {
             try {
                 // Permission Request (Kamera & Mikro)
                 [localTracks.audioTrack, localTracks.videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
                 
-                // UI State Update
                 document.getElementById('gate').style.display = 'none';
                 localTracks.videoTrack.play("local-player");
 
-                pushChat("System", "Verbindung zu Agora-Servern hergestellt. Broadcaster-Modus aktiv. 🚀");
+                pushMsg("System", "Verbindung hergestellt. Broadcaster aktiv. 🚀");
             } catch (e) {
-                alert("ZUGRIFF VERWEIGERT: Bitte Kamera-Rechte in den iPhone-Einstellungen für Safari erlauben.");
+                alert("ZUGRIFF VERWEIGERT: Bitte Kamera-Rechte in Safari erlauben!");
             }
         }
 
-        function forceAudio() { AgoraRTC.onAudioAutoplayFailed = () => { console.log("Audio kickstart"); }; }
+        function kickstartAudio() { AgoraRTC.onAudioAutoplayFailed = () => { console.log("Audio kickstart"); }; }
 
-        function send() {
+        // DEINE LOGIK: buildLiveLayout (Split Screen Toggle)
+        function toggleSplitScreen() {
+            const guestSlot = document.getElementById('slot-guest');
+            const isGuestVisible = guestSlot.style.display === 'block';
+
+            if (!isGuestVisible) {
+                // if (remoteUids.isNotEmpty)
+                guestSlot.style.display = 'block';
+                document.getElementById('remote-player-view').innerHTML = '<img src="https://i.pravatar.cc/600?u=guest" style="width:100%; height:100%; object-fit:cover;">';
+                pushMsg("System", "Gast beigetreten. Split-Screen aktiv.");
+            } else {
+                // else (remoteUids.isEmpty)
+                guestSlot.style.display = 'none';
+                pushMsg("System", "Gast verlassen. Vollbild aktiv.");
+            }
+        }
+
+        // DEINE LOGIK: setBeautyEffectOptions
+        function toggleBeauty() {
+            isBeautyOn = !isBeautyOn;
+            const player = document.getElementById('local-player');
+            if(isBeautyOn) {
+                player.classList.add('beauty-active');
+                pushMsg("AI", "Beauty-Filter (Hautglättung) aktiv ✨");
+                if(navigator.vibrate) navigator.vibrate(60);
+            } else {
+                player.classList.remove('beauty-active');
+                pushMsg("AI", "Filter deaktiviert.");
+            }
+        }
+
+        function sendMessage() {
             const input = document.getElementById('chat-input');
             if(input.value.trim()) {
-                pushChat("User", input.value);
+                pushMsg("User", input.value);
                 input.value = "";
             }
         }
 
-        function pushChat(user, text) {
-            const list = document.getElementById('chat-list');
+        function pushMsg(user, text) {
+            const list = document.getElementById('chat-window');
             const div = document.createElement('div');
-            div.className = 'chat-entry';
+            div.className = 'chat-bubble';
             div.innerHTML = `<b style="color:var(--tt-cyan)">${user}:</b> ${text}`;
             list.appendChild(div);
-            // ListView Auto-Scroll Logik
             if(list.children.length > 7) list.removeChild(list.firstChild);
         }
 
-        // ÜBERSETZUNG DEINER BEAUTY-FILTER LOGIK
-        function applyBeauty() {
-            beautyActive = !beautyActive;
-            const player = document.getElementById('local-player');
-            if(beautyActive) {
-                player.classList.add('beauty-on');
-                pushChat("AI", "Beauty-Filter (Hautglättung & Lightening) aktiv ✨");
-                if(navigator.vibrate) navigator.vibrate(50);
-            } else {
-                player.classList.remove('beauty-on');
-                pushChat("AI", "Filter deaktiviert.");
-            }
-        }
-
-        function fireGift() {
-            pushChat("User", "hat ein GESCHENK gesendet! 🎁🪐");
+        function sendGift() {
+            pushMsg("User", "sendet ein GESCHENK! 🎁🪐");
             if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
         }
     </script>
