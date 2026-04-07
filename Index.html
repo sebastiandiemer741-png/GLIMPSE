@@ -3,85 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE V51 | LIVE</title>
+    <title>GLIMPSE V54 | LIVE CONSOLE</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --live-red: #ff3b30; --neon: #007aff; --privacy: #5856d6; }
+        :root { --live-red: #ff0050; --live-blue: #00f2ea; --gold: #ffd700; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; font-family: -apple-system, sans-serif; color: white; overflow: hidden; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; font-family: 'proxima-nova', sans-serif; color: white; overflow: hidden; }
 
-        /* --- THE LIVE CAMERA (PRIVACY FILTER) --- */
-        #v { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); filter: contrast(1.5) brightness(0.6) hue-rotate(240deg); }
-        #scan-overlay { position: fixed; inset: 0; z-index: 2; background: linear-gradient(rgba(88,86,214,0.1) 1px, transparent 1px); background-size: 100% 4px; pointer-events: none; }
+        /* --- VIDEO LAYER --- */
+        #v { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); transition: 0.4s; }
+        .pk-active { width: 50% !important; border-right: 2px solid white; }
 
-        /* --- LIVE UI --- */
-        .live-hud { position: relative; z-index: 100; height: 100%; display: none; flex-direction: column; justify-content: space-between; padding: 60px 20px 40px; }
-        
-        .live-badge { background: var(--live-red); color: white; padding: 5px 12px; border-radius: 5px; font-weight: 900; font-size: 12px; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        /* --- HUD --- */
+        .hud { position: relative; z-index: 100; height: 100%; display: none; flex-direction: column; padding: 50px 15px 20px; pointer-events: none; }
+        .hud * { pointer-events: auto; }
 
-        .viewer-count { background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; font-size: 12px; backdrop-filter: blur(10px); }
+        /* TOP: LIVE STATS & PK BAR */
+        .top-row { display: flex; justify-content: space-between; align-items: center; }
+        .user-pill { background: rgba(0,0,0,0.4); padding: 5px 10px; border-radius: 20px; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(10px); }
+        .pk-bar { position: absolute; top: 100px; left: 10%; width: 80%; height: 6px; background: var(--live-red); border-radius: 3px; display: none; overflow: hidden; }
+        #pk-progress { width: 60%; height: 100%; background: var(--live-blue); transition: 0.5s; }
 
-        .chat-area { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px 0; mask-image: linear-gradient(to top, black 80%, transparent); }
-        .chat-msg { background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 10px; margin-bottom: 8px; font-size: 13px; border-left: 3px solid var(--neon); width: fit-content; max-width: 80%; }
+        /* SIDEBAR: FILTERS & TOOLS */
+        .sidebar { position: absolute; right: 10px; top: 150px; display: flex; flex-direction: column; gap: 15px; }
+        .tool { width: 45px; height: 45px; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; backdrop-filter: blur(10px); }
 
-        .controls { display: flex; justify-content: space-around; align-items: center; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
-        .circle-btn { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
-        .btn-stop { background: var(--live-red); color: white; border: none; }
+        /* CHAT & HEART ANIMATION */
+        .bottom-section { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 80px; }
+        #chat { max-width: 75%; display: flex; flex-direction: column; gap: 5px; }
+        .msg { background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 12px; font-size: 13px; line-height: 1.4; animation: slideUp 0.3s ease; }
+        .msg b { color: #aaa; margin-right: 5px; }
 
-        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        /* FLOATING HEARTS */
+        .heart { position: absolute; bottom: 100px; right: 20px; font-size: 24px; color: var(--live-red); animation: flyUp 1.5s ease-out forwards; pointer-events: none; z-index: 1000; }
+
+        /* DOCK */
+        .dock { height: 70px; background: linear-gradient(transparent, rgba(0,0,0,0.8)); display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; width: 100%; }
+
+        @keyframes flyUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-300px) scale(2) rotate(20deg); opacity: 0; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <video id="v" autoplay playsinline muted></video>
-    <div id="scan-overlay"></div>
+    
+    <div id="pk-ui" class="pk-bar"><div id="pk-progress"></div></div>
 
-    <div id="gate">
-        <h1 style="letter-spacing: 5px; margin-bottom: 30px;">AVATAR LIVE</h1>
-        <button onclick="startLive()" style="background: white; color: black; border: none; padding: 20px 60px; border-radius: 15px; font-weight: 900; cursor: pointer;">GO LIVE (ANONYM)</button>
-        <p style="font-size: 10px; opacity: 0.5; margin-top: 20px;">Deine echte Identität bleibt verschlüsselt.</p>
+    <div id="gate" style="position:fixed; inset:0; background:#000; z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <h1 style="letter-spacing:10px;">LIVE</h1>
+        <button onclick="launchLive()" style="background:var(--live-red); color:white; border:none; padding:18px 60px; border-radius:30px; font-weight:900; font-size:16px;">START BROADCAST</button>
     </div>
 
-    <div id="app" class="live-hud">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div class="live-badge">● LIVE</div>
-            <div class="viewer-count"><i class="fas fa-users"></i> 482</div>
+    <div id="app" class="hud">
+        <div class="top-row">
+            <div class="user-pill">
+                <div style="width:25px; height:25px; background:var(--live-blue); border-radius:50%;"></div>
+                <div style="font-size:11px;"><b>Creator_Master</b><br>1.4k Zuschauer</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.5); padding:5px 15px; border-radius:15px; font-size:11px;" onclick="location.reload()">BEENDEN</div>
         </div>
 
-        <div class="chat-area" id="chat">
-            <div class="chat-msg"><b>User_99:</b> Cooler Avatar! 🔥</div>
-            <div class="chat-msg"><b>SkillMaster:</b> Kannst du mir das mit Python nochmal zeigen?</div>
-            <div class="chat-msg"><b>EcoLover:</b> G-Power gesendet! ⚡</div>
+        <div class="sidebar">
+            <div class="tool" onclick="toggleBeauty()"><i class="fas fa-wand-magic-sparkles"></i></div>
+            <div class="tool" onclick="togglePK()"><i class="fas fa-trophy" style="color:var(--gold)"></i></div>
+            <div class="tool" onclick="alert('Gast-Anfrage gesendet...')"><i class="fas fa-user-plus"></i></div>
+            <div class="tool" onclick="sendEffect()"><i class="fas fa-gift" style="color:var(--gold)"></i></div>
         </div>
 
-        <div class="controls">
-            <div class="circle-btn" onclick="alert('Avatar gewechselt!')"><i class="fas fa-user-astronaut"></i></div>
-            <div class="circle-btn btn-stop" onclick="location.reload()"><i class="fas fa-stop"></i></div>
-            <div class="circle-btn" onclick="alert('Mikrofon stummgeschaltet')"><i class="fas fa-microphone"></i></div>
+        <div class="bottom-section">
+            <div id="chat">
+                <div class="msg"><b>System:</b> Willkommen im sicheren Live-Stream! 🛡️</div>
+            </div>
+        </div>
+
+        <div class="dock">
+            <div style="flex:1; background:rgba(255,255,255,0.1); margin:0 20px; padding:10px; border-radius:20px; font-size:13px; opacity:0.6;">Schreib etwas...</div>
+            <div onclick="addHeart()" style="font-size:30px; margin-right:20px;"><i class="fas fa-heart" style="color:var(--live-red)"></i></div>
         </div>
     </div>
 
     <script>
-        async function startLive() {
+        let isBeauty = false;
+        let isPK = false;
+
+        async function launchLive() {
             try {
-                const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+                const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 document.getElementById('v').srcObject = s;
                 document.getElementById('gate').style.display = 'none';
                 document.getElementById('app').style.display = 'flex';
-                if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
-                
-                // Simulierter Chat-Verlauf
-                setInterval(() => {
-                    const chat = document.getElementById('chat');
-                    const msg = document.createElement('div');
-                    msg.className = 'chat-msg';
-                    msg.innerHTML = `<b>Guest_${Math.floor(Math.random()*100)}:</b> Toller Content! 🚀`;
-                    chat.appendChild(msg);
-                    if(chat.children.length > 5) chat.removeChild(chat.firstChild);
-                }, 3000);
+                simulateChat();
+            } catch (e) { alert("Cam Error."); }
+        }
 
-            } catch (e) { alert("Live-Modus benötigt Kamera."); }
+        function toggleBeauty() {
+            isBeauty = !isBeauty;
+            document.getElementById('v').style.filter = isBeauty ? "brightness(1.1) contrast(0.9) blur(1px)" : "none";
+            if(navigator.vibrate) navigator.vibrate(40);
+        }
+
+        function togglePK() {
+            isPK = !isPK;
+            const v = document.getElementById('v');
+            const pkBar = document.getElementById('pk-ui');
+            if(isPK) {
+                v.classList.add('pk-active');
+                pkBar.style.display = 'block';
+                document.body.style.background = "linear-gradient(90deg, #000 50%, var(--live-red) 50%)";
+            } else {
+                v.classList.remove('pk-active');
+                pkBar.style.display = 'none';
+                document.body.style.background = "#000";
+            }
+        }
+
+        function addHeart() {
+            const h = document.createElement('div');
+            h.className = 'heart';
+            h.innerHTML = '<i class="fas fa-heart"></i>';
+            h.style.left = (window.innerWidth - 60) + 'px';
+            document.body.appendChild(h);
+            setTimeout(() => h.remove(), 1500);
+            if(navigator.vibrate) navigator.vibrate(20);
+        }
+
+        function simulateChat() {
+            const users = ["Rico", "Sarah", "Dev", "Max"];
+            const texts = ["Mega Filter!", "PK-Runde?", "G-Power geschickt!", "Hi aus Berlin"];
+            setInterval(() => {
+                const chat = document.getElementById('chat');
+                const m = document.createElement('div');
+                m.className = 'msg';
+                m.innerHTML = `<b>${users[Math.floor(Math.random()*4)]}</b> ${texts[Math.floor(Math.random()*4)]}`;
+                chat.appendChild(m);
+                if(chat.children.length > 6) chat.removeChild(chat.firstChild);
+            }, 3000);
+        }
+
+        function sendEffect() {
+            alert("G-Power Diamant erhalten! 💎 +1000");
+            if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
         }
     </script>
 </body>
