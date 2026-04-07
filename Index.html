@@ -3,129 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE V37 | OMNIVERSE</title>
+    <title>GLIMPSE V51 | LIVE</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --neon: #00f2ea; --magenta: #ff00ff; --gold: #ffd700; --glass: rgba(255,255,255,0.1); }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; font-family: 'Inter', sans-serif; color: white; overflow: hidden; }
+        :root { --live-red: #ff3b30; --neon: #007aff; --privacy: #5856d6; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; font-family: -apple-system, sans-serif; color: white; overflow: hidden; }
 
-        /* --- BACKGROUND LAYER --- */
-        #v-live { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); filter: brightness(0.7); }
-        #main-feed { position: relative; z-index: 5; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; display: none; }
-        .v-card { height: 100vh; width: 100vw; scroll-snap-align: start; position: relative; display: flex; align-items: center; justify-content: center; }
+        /* --- THE LIVE CAMERA (PRIVACY FILTER) --- */
+        #v { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); filter: contrast(1.5) brightness(0.6) hue-rotate(240deg); }
+        #scan-overlay { position: fixed; inset: 0; z-index: 2; background: linear-gradient(rgba(88,86,214,0.1) 1px, transparent 1px); background-size: 100% 4px; pointer-events: none; }
 
-        /* --- UI ELEMENTS --- */
-        .ui-layer { position: fixed; inset: 0; z-index: 10; pointer-events: none; display: none; }
-        .ui-layer * { pointer-events: auto; }
+        /* --- LIVE UI --- */
+        .live-hud { position: relative; z-index: 100; height: 100%; display: none; flex-direction: column; justify-content: space-between; padding: 60px 20px 40px; }
+        
+        .live-badge { background: var(--live-red); color: white; padding: 5px 12px; border-radius: 5px; font-weight: 900; font-size: 12px; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* TOP STATS */
-        .top-bar { position: absolute; top: 50px; left: 20px; display: flex; gap: 10px; }
-        .gp-pill { background: rgba(0,0,0,0.7); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--gold); color: var(--gold); font-weight: 900; }
+        .viewer-count { background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; font-size: 12px; backdrop-filter: blur(10px); }
 
-        /* SIDEBAR (Interaktion) */
-        .sidebar { position: absolute; right: 15px; bottom: 150px; display: flex; flex-direction: column; gap: 20px; }
-        .s-tool { width: 55px; height: 55px; background: var(--glass); backdrop-filter: blur(20px); border-radius: 18px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2); font-size: 24px; }
+        .chat-area { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px 0; mask-image: linear-gradient(to top, black 80%, transparent); }
+        .chat-msg { background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 10px; margin-bottom: 8px; font-size: 13px; border-left: 3px solid var(--neon); width: fit-content; max-width: 80%; }
 
-        /* MESSENGER & CHAT */
-        #messenger { position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(40px); z-index: 9000; display: none; padding: 60px 20px; }
-        .msg-bubble { background: var(--glass); padding: 12px; border-radius: 15px; margin-bottom: 10px; border: 1px solid #333; }
+        .controls { display: flex; justify-content: space-around; align-items: center; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .circle-btn { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
+        .btn-stop { background: var(--live-red); color: white; border: none; }
 
-        /* DOCK */
-        .dock { position: fixed; bottom: 30px; left: 5%; width: 90%; height: 75px; background: rgba(10,10,10,0.9); border-radius: 35px; border: 1px solid #222; display: flex; justify-content: space-around; align-items: center; }
-        .plus-node { width: 65px; height: 65px; background: white; color: black; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; transform: translateY(-15px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-
-        /* GATE */
-        #gate { position: fixed; inset: 0; background: #000; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .gate-btn { padding: 22px 50px; border-radius: 40px; border: 2px solid var(--neon); background: transparent; color: var(--neon); font-weight: 900; letter-spacing: 2px; }
+        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
-    <video id="v-live" autoplay playsinline muted></video>
+    <video id="v" autoplay playsinline muted></video>
+    <div id="scan-overlay"></div>
 
     <div id="gate">
-        <h1 style="letter-spacing:10px; margin-bottom:40px;">GLIMPSE V37</h1>
-        <button class="gate-btn" onclick="activateSystem()">SYNC & CONNECT</button>
+        <h1 style="letter-spacing: 5px; margin-bottom: 30px;">AVATAR LIVE</h1>
+        <button onclick="startLive()" style="background: white; color: black; border: none; padding: 20px 60px; border-radius: 15px; font-weight: 900; cursor: pointer;">GO LIVE (ANONYM)</button>
+        <p style="font-size: 10px; opacity: 0.5; margin-top: 20px;">Deine echte Identität bleibt verschlüsselt.</p>
     </div>
 
-    <div id="app" class="ui-layer">
-        <div class="top-bar">
-            <div class="gp-pill"><i class="fas fa-bolt"></i> <span id="gp">4500</span> GP</div>
+    <div id="app" class="live-hud">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="live-badge">● LIVE</div>
+            <div class="viewer-count"><i class="fas fa-users"></i> 482</div>
         </div>
 
-        <div class="sidebar">
-            <div class="s-tool" onclick="addGP()"><i class="fas fa-heart" style="color:var(--magenta)"></i></div>
-            <div class="s-tool" onclick="openMessenger()"><i class="fas fa-paper-plane" style="color:var(--neon)"></i></div>
-            <div class="s-tool" onclick="startMatch()"><i class="fas fa-swords" style="color:var(--gold)"></i></div>
-            <div class="s-tool" onclick="location.reload()"><i class="fas fa-sync"></i></div>
+        <div class="chat-area" id="chat">
+            <div class="chat-msg"><b>User_99:</b> Cooler Avatar! 🔥</div>
+            <div class="chat-msg"><b>SkillMaster:</b> Kannst du mir das mit Python nochmal zeigen?</div>
+            <div class="chat-msg"><b>EcoLover:</b> G-Power gesendet! ⚡</div>
         </div>
 
-        <div id="main-feed" style="display:block;">
-            <div class="v-card">
-                <div style="position:absolute; bottom:130px; left:20px; width:70%;">
-                    <h3>@Omni_Creator</h3>
-                    <p>Willkommen in der Weltneuheit. Messenger, Matches & Uploads aktiv! 🚀</p>
-                </div>
-            </div>
+        <div class="controls">
+            <div class="circle-btn" onclick="alert('Avatar gewechselt!')"><i class="fas fa-user-astronaut"></i></div>
+            <div class="circle-btn btn-stop" onclick="location.reload()"><i class="fas fa-stop"></i></div>
+            <div class="circle-btn" onclick="alert('Mikrofon stummgeschaltet')"><i class="fas fa-microphone"></i></div>
         </div>
-
-        <div class="dock">
-            <i class="fas fa-house" style="color:var(--neon)"></i>
-            <i class="fas fa-magnifying-glass"></i>
-            <label for="up" class="plus-node"><i class="fas fa-plus"></i></label>
-            <input type="file" id="up" accept="video/*" style="display:none" onchange="handleUpload(event)">
-            <i class="fas fa-trophy"></i>
-            <i class="fas fa-user"></i>
-        </div>
-    </div>
-
-    <div id="messenger">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-            <h2>MESSENGER</h2>
-            <i class="fas fa-times" onclick="document.getElementById('messenger').style.display='none'" style="font-size:24px;"></i>
-        </div>
-        <div class="msg-bubble"><b>System:</b> Ende-zu-Ende verschlüsselt aktiv. 🛡️</div>
-        <div class="msg-bubble"><b>User_88:</b> Hey! Wann kommt das neue Video? 🔥</div>
-        <div style="position:absolute; bottom:30px; width:90%;"><input type="text" placeholder="Nachricht..." style="width:100%; background:#222; border:none; padding:15px; border-radius:15px; color:white;"></div>
     </div>
 
     <script>
-        let gpCount = 4500;
-
-        async function activateSystem() {
+        async function startLive() {
             try {
-                const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                document.getElementById('v-live').srcObject = s;
+                const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+                document.getElementById('v').srcObject = s;
                 document.getElementById('gate').style.display = 'none';
-                document.getElementById('app').style.display = 'block';
-            } catch (e) {
-                alert("Kamera-Fehler! Demo-Modus aktiv.");
-                document.getElementById('gate').style.display = 'none';
-                document.getElementById('app').style.display = 'block';
-            }
-        }
-
-        function addGP() {
-            gpCount += 100;
-            document.getElementById('gp').innerText = gpCount;
-            if(navigator.vibrate) navigator.vibrate(50);
-        }
-
-        function openMessenger() {
-            document.getElementById('messenger').style.display = 'block';
-        }
-
-        function startMatch() {
-            alert("Matchmaking gestartet... Suche Gegner für Battle! ⚔️");
-        }
-
-        function handleUpload(event) {
-            const file = event.target.files[0];
-            if(file) {
-                alert("Video wird verarbeitet und im G-Feed hochgeladen! 🚀");
+                document.getElementById('app').style.display = 'flex';
                 if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
-            }
+                
+                // Simulierter Chat-Verlauf
+                setInterval(() => {
+                    const chat = document.getElementById('chat');
+                    const msg = document.createElement('div');
+                    msg.className = 'chat-msg';
+                    msg.innerHTML = `<b>Guest_${Math.floor(Math.random()*100)}:</b> Toller Content! 🚀`;
+                    chat.appendChild(msg);
+                    if(chat.children.length > 5) chat.removeChild(chat.firstChild);
+                }, 3000);
+
+            } catch (e) { alert("Live-Modus benötigt Kamera."); }
         }
     </script>
 </body>
