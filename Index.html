@@ -3,120 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE V63 | BEYOND</title>
+    <title>GLIMPSE V64 | FINAL</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --neon-green: #00ff88; --ghost-white: rgba(255,255,255,0.6); --truth-red: #ff3b30; }
+        :root { --tt-red: #ff0050; --tt-cyan: #00f2ea; --gold: #ffd700; --mod: #007aff; --truth: #00ff88; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        body, html { height: 100%; background: #000; font-family: sans-serif; color: white; overflow: hidden; }
+        body, html { height: 100%; background: #000; font-family: -apple-system, sans-serif; color: white; overflow: hidden; position: fixed; width: 100%; }
 
-        #v { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); }
+        /* --- LAYERS --- */
+        #v { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); transition: 0.5s; }
+        #fx-layer { position: fixed; inset: 0; z-index: 150; pointer-events: none; }
+
+        /* --- TRUTH O METER --- */
+        .truth-wrap { position: absolute; top: 115px; left: 15px; z-index: 200; }
+        #truth-bar { width: 100px; height: 6px; background: rgba(0,0,0,0.5); border-radius: 3px; overflow: hidden; border: 0.5px solid rgba(255,255,255,0.2); }
+        #truth-fill { height: 100%; width: 80%; background: var(--truth); transition: 1s; box-shadow: 0 0 10px var(--truth); }
+
+        /* --- HUD ELEMENTS --- */
+        .hud { position: relative; z-index: 100; height: 100%; display: none; flex-direction: column; padding: 50px 15px 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; }
+        .creator { background: rgba(0,0,0,0.5); padding: 5px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(10px); }
         
-        /* TRUTH O METER */
-        #truth-meter { position: absolute; top: 120px; left: 20px; width: 100px; height: 10px; background: #222; border-radius: 5px; z-index: 200; border: 1px solid rgba(255,255,255,0.2); overflow: hidden; }
-        #truth-fill { height: 100%; width: 85%; background: var(--neon-green); transition: 0.5s; }
-        .truth-label { position: absolute; top: 100px; left: 20px; font-size: 8px; font-weight: bold; z-index: 200; color: var(--neon-green); letter-spacing: 1px; }
+        /* SIDEBAR TOOLS */
+        .sidebar { position: absolute; right: 10px; top: 150px; display: flex; flex-direction: column; gap: 15px; z-index: 210; }
+        .s-btn { width: 48px; height: 48px; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); }
 
-        /* GHOST HANDS ANIMATION */
-        .ghost-hand { position: absolute; z-index: 150; font-size: 80px; filter: drop-shadow(0 0 20px white); pointer-events: none; opacity: 0; }
-        @keyframes ghostAttack { 
-            0% { transform: scale(0.5) translate(0, 500px); opacity: 0; }
-            50% { opacity: 0.8; }
-            100% { transform: scale(1.5) translate(var(--tx), var(--ty)); opacity: 0; }
-        }
+        /* CHAT & INTERACTION */
+        #chat-zone { position: absolute; bottom: 90px; left: 15px; width: 75%; height: 220px; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; pointer-events: none; }
+        .msg { background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 12px; font-size: 13px; margin-bottom: 5px; animation: slide 0.2s ease; width: fit-content; pointer-events: auto; display: flex; align-items: center; gap: 10px; }
+        .msg b { color: var(--tt-cyan); }
+        .msg.is-mod b { color: var(--mod); }
+        .ban-x { color: var(--tt-red); font-size: 14px; opacity: 0.5; }
 
-        /* HUD */
-        .hud { position: relative; z-index: 100; height: 100%; display: none; flex-direction: column; padding: 50px 20px; }
-        .sidebar { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 20px; }
-        .btn-hex { width: 50px; height: 50px; background: rgba(255,255,255,0.1); border: 1px solid var(--neon-green); display: flex; align-items: center; justify-content: center; border-radius: 12px; backdrop-filter: blur(10px); }
+        /* DOCK */
+        .dock { position: fixed; bottom: 0; width: 100%; height: 80px; display: flex; align-items: center; padding: 0 15px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); z-index: 300; }
+        #user-input { flex: 1; background: rgba(255,255,255,0.15); border: none; padding: 12px 18px; border-radius: 25px; color: white; font-size: 14px; outline: none; }
 
-        .chat { position: absolute; bottom: 100px; left: 20px; width: 70%; height: 150px; overflow: hidden; pointer-events: none; }
-        .msg { background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 8px; font-size: 12px; margin-bottom: 5px; border-left: 2px solid var(--neon-green); animation: slide 0.3s ease; }
-        
+        /* ANIMATIONS */
         @keyframes slide { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        @keyframes heartFly { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-400px) scale(3); opacity: 0; } }
+        @keyframes ghostHand { 0% { transform: translateY(500px) scale(0.5); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(-200px) scale(2); opacity: 0; } }
+
+        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
     </style>
 </head>
-<body>
+<body onclick="spawnHeart(event)">
 
     <video id="v" autoplay playsinline muted></video>
-    
-    <div class="truth-label">AUTHENTIZITÄT</div>
-    <div id="truth-meter"><div id="truth-fill"></div></div>
+    <div id="fx-layer"></div>
 
     <div id="gate">
-        <h1 style="letter-spacing: 15px; margin-bottom: 20px;">BEYOND</h1>
-        <button onclick="startBeyond()" style="background:var(--neon-green); color:black; border:none; padding:18px 50px; border-radius:10px; font-weight:900;">ACTIVATE NEURAL STREAM</button>
+        <div style="width:80px; height:80px; background:linear-gradient(45deg, var(--tt-red), var(--mod)); border-radius:20px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; box-shadow: 0 0 30px var(--mod);">
+            <i class="fas fa-bolt" style="font-size:40px;"></i>
+        </div>
+        <h1 style="letter-spacing:10px;">GLIMPSE V64</h1>
+        <p style="opacity:0.5; margin-bottom:40px;">THE FINAL ARCHETYPE</p>
+        <button onclick="launch()" style="background:white; color:black; border:none; padding:18px 60px; border-radius:40px; font-weight:900; font-size:16px;">START BROADCAST</button>
     </div>
 
     <div id="app" class="hud">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div style="border: 1px solid var(--neon-green); padding: 5px 10px; border-radius: 5px; font-size: 10px;">LIVE // SENSE_ON</div>
-            <div onclick="location.reload()"><i class="fas fa-power-off"></i></div>
+        <div class="header">
+            <div class="creator">
+                <div style="width:28px; height:28px; background:var(--mod); border-radius:50%; border:1px solid white;"></div>
+                <div style="font-size:10px;"><b>Sovereign_Live</b> <i class="fas fa-check-circle" style="color:var(--mod)"></i><br><span id="like-count">12.8k Likes</span></div>
+            </div>
+            <div style="background:rgba(255,255,255,0.1); padding:5px 12px; border-radius:15px; font-size:18px;" onclick="location.reload()"><i class="fas fa-power-off"></i></div>
+        </div>
+
+        <div class="truth-wrap">
+            <div style="font-size:8px; font-weight:bold; color:var(--truth); margin-bottom:4px;">AUTHENTIZITÄT</div>
+            <div id="truth-bar"><div id="truth-fill"></div></div>
         </div>
 
         <div class="sidebar">
-            <div class="btn-hex" onclick="triggerGhost()"><i class="fas fa-hand-sparkles"></i></div>
-            <div class="btn-hex" onclick="toggleTruth()"><i class="fas fa-eye"></i></div>
-            <div class="btn-hex" onclick="alert('Community-Beat: ON')"><i class="fas fa-music"></i></div>
+            <div class="s-btn" onclick="spawnGhost()"><i class="fas fa-hand-sparkles" style="color:var(--gold)"></i></div>
+            <div class="s-btn" onclick="triggerGift()"><i class="fas fa-gift" style="color:var(--tt-cyan)"></i></div>
+            <div class="s-btn" onclick="alert('Moderator-Modus: AN')"><i class="fas fa-shield-halved" style="color:var(--mod)"></i></div>
         </div>
 
-        <div id="chat" class="chat"></div>
+        <div id="chat-zone"></div>
 
-        <div style="position:fixed; bottom:30px; width:90%; left:5%; display:flex; gap:10px;">
-            <input type="text" id="in" placeholder="Sende Gedanken..." style="flex:1; background:none; border: 1px solid rgba(255,255,255,0.3); padding:15px; border-radius:10px; color:white;">
-        </div>
+        <form class="dock" onsubmit="sendMyMsg(event)">
+            <input type="text" id="user-input" placeholder="Sag etwas..." autocomplete="off">
+            <button type="submit" style="background:none; border:none; color:var(--tt-cyan); margin-left:15px; font-size:22px;"><i class="fas fa-paper-plane"></i></button>
+        </form>
     </div>
 
     <script>
-        async function startBeyond() {
+        let likes = 12800;
+        let mods = ["Guardian_Alpha", "System"];
+
+        async function launch() {
             try {
                 const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 document.getElementById('v').srcObject = s;
                 document.getElementById('gate').style.display = 'none';
                 document.getElementById('app').style.display = 'flex';
-                runTruthEngine();
-                simulateCommunity();
-            } catch (e) { alert("Access Denied."); }
+                startEngines();
+            } catch (e) { alert("Cam-Fehler."); }
         }
 
-        function runTruthEngine() {
+        function startEngines() {
+            // Truth-O-Meter Engine
             setInterval(() => {
-                const val = Math.floor(Math.random() * 40 + 60);
+                const val = Math.floor(Math.random() * 30 + 70);
                 document.getElementById('truth-fill').style.width = val + "%";
-                document.getElementById('truth-fill').style.background = val < 70 ? "var(--truth-red)" : "var(--neon-green)";
             }, 3000);
-        }
 
-        function triggerGhost() {
-            const hand = document.createElement('div');
-            hand.className = 'ghost-hand';
-            hand.innerHTML = '🖐️';
-            hand.style.setProperty('--tx', (Math.random() * 200 - 100) + 'px');
-            hand.style.setProperty('--ty', (Math.random() * -400 - 100) + 'px');
-            hand.style.left = "40%";
-            hand.style.animation = "ghostAttack 1.5s ease-out forwards";
-            document.body.appendChild(hand);
-            if(navigator.vibrate) navigator.vibrate([30, 50, 30]);
-            setTimeout(() => hand.remove(), 1500);
-        }
-
-        function toggleTruth() {
-            const m = document.getElementById('truth-meter');
-            m.style.display = m.style.display === 'none' ? 'block' : 'none';
-        }
-
-        function simulateCommunity() {
-            const users = ["Nexus", "Void", "Echo", "Cyber"];
+            // Chat Engine
+            const users = ["Rico", "Sarah", "Guardian_Alpha", "Troll_99", "Lia"];
+            const texts = ["Hammer Vibe!", "Ghost-Hand schicken!", "Ich passe auf 🛡️", "Lüge!", "💎💎💎"];
+            
             setInterval(() => {
-                const chat = document.getElementById('chat');
+                const chat = document.getElementById('chat-zone');
+                const user = users[Math.floor(Math.random()*users.length)];
+                const isMod = mods.includes(user);
+                
                 const m = document.createElement('div');
-                m.className = 'msg';
-                m.innerHTML = `<b>${users[Math.floor(Math.random()*4)]}:</b> Sende Ghost-Hand!`;
+                m.className = `msg ${isMod ? 'is-mod' : ''}`;
+                m.innerHTML = `<span><b>${isMod ? '🛡️ ' : ''}${user}:</b> ${texts[Math.floor(Math.random()*texts.length)]}</span><i class="fas fa-ban ban-x" onclick="this.parentElement.remove()"></i>`;
                 chat.appendChild(m);
-                if(chat.children.length > 5) chat.removeChild(chat.firstChild);
-                if(Math.random() > 0.7) triggerGhost();
-            }, 4000);
+                if(chat.children.length > 6) chat.removeChild(chat.firstChild);
+            }, 2500);
+        }
+
+        function sendMyMsg(e) {
+            e.preventDefault();
+            const inp = document.getElementById('user-input');
+            if(!inp.value) return;
+            const chat = document.getElementById('chat-zone');
+            const m = document.createElement('div');
+            m.className = "msg is-mod";
+            m.style.background = "rgba(255,255,255,0.1)";
+            m.innerHTML = `<span><b>🛡️ Du:</b> ${inp.value}</span>`;
+            chat.appendChild(m);
+            inp.value = "";
+            inp.blur();
+            if(navigator.vibrate) navigator.vibrate(10);
+        }
+
+        function spawnHeart(e) {
+            if(document.getElementById('app').style.display !== 'flex' || e.target.tagName === 'INPUT') return;
+            const fx = document.getElementById('fx-layer');
+            const h = document.createElement('div');
+            h.innerHTML = '<i class="fas fa-heart"></i>';
+            h.style.position = 'absolute';
+            h.style.left = e.clientX + 'px';
+            h.style.top = e.clientY + 'px';
+            h.style.color = "#ff0050";
+            h.style.fontSize = "30px";
+            h.style.animation = "heartFly 1.2s ease-out forwards";
+            fx.appendChild(h);
+            
+            likes++;
+            document.getElementById('like-count').innerText = (likes/1000).toFixed(1) + "k Likes";
+            if(navigator.vibrate) navigator.vibrate(20);
+            setTimeout(() => h.remove(), 1200);
+        }
+
+        function spawnGhost() {
+            const fx = document.getElementById('fx-layer');
+            const g = document.createElement('div');
+            g.innerHTML = '🖐️';
+            g.style.position = 'absolute';
+            g.style.left = "40%";
+            g.style.bottom = "0";
+            g.style.fontSize = "100px";
+            g.style.filter = "drop-shadow(0 0 20px white)";
+            g.style.animation = "ghostHand 1.5s ease-out forwards";
+            fx.appendChild(g);
+            if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            setTimeout(() => g.remove(), 1500);
+        }
+
+        function triggerGift() {
+            alert("G-Power Diamant erhalten! 💎 +1000");
+            if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
         }
     </script>
 </body>
