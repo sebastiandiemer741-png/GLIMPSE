@@ -3,50 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE V67 | SUPREMACY</title>
+    <title>GLIMPSE V68 | OMNIPOTENCE</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --tt-red: #ff0050; --tt-cyan: #00f2ea; --gold: #ffd700; --mod: #007aff; --truth: #00ff88; }
+        :root { --tt-red: #ff0050; --tt-cyan: #00f2ea; --gold: #ffd700; --mod: #007aff; --truth: #00ff88; --purple: #a020f0; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         body, html { height: 100%; background: #000; font-family: -apple-system, sans-serif; color: white; overflow: hidden; position: fixed; width: 100%; }
 
-        /* --- LAYERS --- */
+        /* --- ADVANCED VIDEO ENGINE --- */
         #v { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); transition: 0.5s filter; }
+        .thermal { filter: contrast(2) saturate(3) hue-rotate(90deg) invert(1) !important; }
+        .shake { animation: shake 0.2s infinite; }
+
+        /* --- MEDIA & AR LAYERS --- */
         #fx-layer { position: fixed; inset: 0; z-index: 150; pointer-events: none; }
-        #media-pip { position: absolute; top: 130px; right: 70px; width: 100px; height: 150px; background: #111; border: 2px solid var(--tt-cyan); border-radius: 12px; display: none; z-index: 160; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        #media-pip { position: absolute; top: 130px; right: 75px; width: 110px; height: 160px; background: #111; border: 2px solid var(--tt-cyan); border-radius: 12px; display: none; z-index: 160; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
 
-        /* --- HUD ELEMENTS --- */
+        /* --- HUD & SENSORS --- */
         .hud { position: relative; z-index: 100; height: 100%; display: none; flex-direction: column; padding: 50px 15px 20px; }
-        
-        .top-stats { display: flex; flex-direction: column; gap: 5px; }
-        .creator-pill { background: rgba(0,0,0,0.5); padding: 5px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(10px); width: fit-content; }
-        
-        .truth-wrap { margin-top: 10px; background: rgba(0,0,0,0.4); padding: 5px 10px; border-radius: 10px; width: fit-content; }
+        .truth-wrap { margin-top: 15px; background: rgba(0,0,0,0.5); padding: 8px; border-radius: 12px; width: fit-content; border: 1px solid rgba(255,255,255,0.1); }
         #truth-bar { width: 100px; height: 6px; background: #222; border-radius: 3px; overflow: hidden; margin-top: 4px; }
-        #truth-fill { height: 100%; width: 80%; background: var(--truth); transition: 1s; box-shadow: 0 0 10px var(--truth); }
+        #truth-fill { height: 100%; width: 85%; background: var(--truth); transition: 1s; box-shadow: 0 0 15px var(--truth); }
 
-        /* SIDEBAR TOOLS */
-        .sidebar { position: absolute; right: 10px; top: 120px; display: flex; flex-direction: column; gap: 15px; z-index: 210; }
-        .s-btn { width: 48px; height: 48px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); }
-        .s-btn.active { border-color: var(--tt-cyan); color: var(--tt-cyan); }
+        /* SIDEBAR PRO TOOLS */
+        .sidebar { position: absolute; right: 12px; top: 120px; display: flex; flex-direction: column; gap: 12px; z-index: 210; }
+        .s-btn { width: 50px; height: 50px; background: rgba(0,0,0,0.6); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(15px); transition: 0.3s; }
+        .s-btn.active { border-color: var(--tt-cyan); color: var(--tt-cyan); box-shadow: 0 0 15px var(--tt-cyan); }
 
-        /* BEAUTY PANEL */
-        #beauty-ctrl { position: absolute; bottom: 100px; right: 15px; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 15px; display: none; z-index: 300; width: 150px; }
+        /* CONTROL PANELS */
+        #beauty-panel { position: absolute; bottom: 100px; right: 15px; background: rgba(0,0,0,0.9); padding: 15px; border-radius: 20px; display: none; z-index: 300; width: 160px; border: 1px solid var(--tt-cyan); }
 
-        /* CHAT */
-        #chat-zone { position: absolute; bottom: 90px; left: 15px; width: 75%; height: 220px; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; pointer-events: none; }
-        .msg { background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 12px; font-size: 13px; margin-bottom: 5px; animation: slide 0.2s ease; width: fit-content; pointer-events: auto; display: flex; align-items: center; gap: 8px; border-left: 3px solid transparent; }
-        .msg.is-mod { border-left-color: var(--mod); }
+        /* CHAT SYSTEM */
+        #chat-zone { position: absolute; bottom: 90px; left: 15px; width: 75%; height: 230px; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; pointer-events: none; }
+        .msg { background: rgba(0,0,0,0.35); padding: 7px 12px; border-radius: 15px; font-size: 13px; margin-bottom: 6px; animation: slideIn 0.2s ease; width: fit-content; pointer-events: auto; display: flex; align-items: center; gap: 8px; border-left: 3px solid transparent; }
+        .msg.is-mod { border-left-color: var(--mod); background: rgba(0,122,255,0.1); }
         .msg b { color: var(--tt-cyan); }
         .msg.is-mod b { color: var(--mod); }
 
         /* DOCK */
-        .dock { position: fixed; bottom: 0; width: 100%; height: 80px; display: flex; align-items: center; padding: 0 15px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); z-index: 300; }
-        #u-input { flex: 1; background: rgba(255,255,255,0.15); border: none; padding: 12px 18px; border-radius: 25px; color: white; font-size: 14px; outline: none; }
+        .dock { position: fixed; bottom: 0; width: 100%; height: 85px; display: flex; align-items: center; padding: 0 15px; background: linear-gradient(transparent, rgba(0,0,0,0.95)); z-index: 300; }
+        #u-input { flex: 1; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.1); padding: 12px 18px; border-radius: 25px; color: white; font-size: 14px; outline: none; }
 
-        @keyframes slide { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes heartFly { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-400px) scale(3); opacity: 0; } }
-        @keyframes ghostH { 0% { transform: translateY(500px) scale(0.5); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(-200px) scale(2); opacity: 0; } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes heartUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-450px) scale(3); opacity: 0; } }
+        @keyframes ghostA { 0% { transform: translateY(600px) scale(0.5); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(-250px) scale(2.5); opacity: 0; } }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-2px, -2px); } 100% { transform: translate(1px, 1px); } }
 
         #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
     </style>
@@ -55,94 +56,93 @@
 
     <video id="v" autoplay playsinline muted></video>
     <div id="fx-layer"></div>
-    <div id="media-pip"><img src="https://picsum.photos/200/300" style="width:100%; height:100%; object-fit:cover;"></div>
+    <div id="media-pip"><img src="https://picsum.photos/300/500" style="width:100%; height:100%; object-fit:cover;"></div>
 
     <div id="gate">
-        <div style="width:70px; height:70px; background:var(--tt-red); border-radius:20px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; box-shadow: 0 0 30px var(--tt-red);">
-            <i class="fas fa-camera-retro" style="font-size:30px;"></i>
+        <div style="width:90px; height:90px; background:linear-gradient(135deg, var(--tt-red), var(--purple)); border-radius:25px; display:flex; align-items:center; justify-content:center; margin-bottom:25px; box-shadow: 0 0 40px var(--purple);">
+            <i class="fas fa-atom" style="font-size:45px; color:white;"></i>
         </div>
-        <h1 style="letter-spacing:10px;">GLIMPSE V67</h1>
-        <button onclick="launchV67()" style="background:white; color:black; border:none; padding:18px 60px; border-radius:40px; font-weight:900; margin-top:30px;">START SUPREMACY</button>
+        <h1 style="letter-spacing:12px; font-weight:900;">OMNIPOTENCE</h1>
+        <p style="opacity:0.6; margin-bottom:45px; letter-spacing:2px;">V68 | FINAL FUSION</p>
+        <button onclick="launchV68()" style="background:white; color:black; border:none; padding:22px 70px; border-radius:50px; font-weight:900; font-size:16px; box-shadow: 0 10px 20px rgba(255,255,255,0.2);">ACTIVATE ALL SYSTEMS</button>
     </div>
 
     <div id="app" class="hud">
         <div class="header">
-            <div class="top-stats">
-                <div class="creator-pill">
-                    <div style="width:25px; height:25px; background:var(--mod); border-radius:50%; border:1px solid white;"></div>
-                    <div style="font-size:10px;"><b>Sovereign_Live</b> <i class="fas fa-check-circle" style="color:var(--mod)"></i></div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <div style="background:rgba(0,0,0,0.6); padding:6px 15px; border-radius:25px; border:1px solid var(--tt-cyan); font-size:11px; width:fit-content;">
+                    <i class="fas fa-circle" style="color:red; font-size:8px; margin-right:5px;"></i> <b>LIVE</b> | 2.8k Viewers
                 </div>
                 <div class="truth-wrap">
-                    <div style="font-size:8px; font-weight:bold; color:var(--truth);">AUTHENTIZITÄT</div>
+                    <div style="font-size:8px; font-weight:bold; color:var(--truth); letter-spacing:1px;">AUTHENTIZITÄT</div>
                     <div id="truth-bar"><div id="truth-fill"></div></div>
                 </div>
             </div>
-            <div onclick="location.reload()" style="font-size:22px; background:rgba(255,255,255,0.1); padding:10px; border-radius:50%;"><i class="fas fa-power-off"></i></div>
+            <div onclick="location.reload()" style="font-size:24px; background:rgba(0,0,0,0.5); padding:12px; border-radius:50%; border:1px solid rgba(255,255,255,0.2);"><i class="fas fa-power-off"></i></div>
         </div>
 
-        <div id="beauty-ctrl">
-            <p style="font-size:9px; margin-bottom:8px;">SKIN SMOOTH: <span id="b-val">0</span>%</p>
-            <input type="range" min="0" max="100" value="0" style="width:100%; accent-color:var(--tt-cyan);" oninput="applyBeauty(this.value)">
+        <div id="beauty-panel">
+            <p style="font-size:9px; margin-bottom:10px; color:var(--tt-cyan);">SKIN GLIDE: <span id="b-val">0</span>%</p>
+            <input type="range" min="0" max="100" value="0" style="width:100%;" oninput="applyBeauty(this.value)">
         </div>
 
         <div class="sidebar">
-            <div class="s-btn" onclick="spawnGhost()"><i class="fas fa-hand-sparkles" style="color:var(--gold)"></i></div>
-            <div class="s-btn" onclick="toggleBeauty()"><i class="fas fa-wand-magic-sparkles"></i></div>
+            <div class="s-btn" onclick="spawnGhostHand()"><i class="fas fa-hand-sparkles" style="color:var(--gold)"></i></div>
+            <div class="s-btn" id="t-btn" onclick="toggleThermal()"><i class="fas fa-eye"></i></div>
             <div class="s-btn" onclick="toggleMedia()"><i class="fas fa-clone"></i></div>
-            <div class="s-btn" onclick="alert('Guardian Shield: Aktiv')"><i class="fas fa-shield-halved" style="color:var(--mod)"></i></div>
+            <div class="s-btn" onclick="toggleBeauty()"><i class="fas fa-wand-magic-sparkles"></i></div>
+            <div class="s-btn" onclick="triggerShake()"><i class="fas fa-bolt"></i></div>
+            <div class="s-btn" onclick="alert('Moderator-Schilder aktiviert 🛡️')"><i class="fas fa-shield-halved" style="color:var(--mod)"></i></div>
         </div>
 
         <div id="chat-zone"></div>
 
-        <form class="dock" onsubmit="sendMsg(event)">
-            <input type="text" id="u-input" placeholder="Sag etwas..." autocomplete="off">
-            <button type="submit" style="background:none; border:none; color:var(--tt-cyan); margin-left:15px; font-size:22px;"><i class="fas fa-paper-plane"></i></button>
+        <form class="dock" onsubmit="sendMyMessage(event)">
+            <input type="text" id="u-input" placeholder="Nachricht an Community..." autocomplete="off">
+            <button type="submit" style="background:none; border:none; color:var(--tt-cyan); margin-left:15px; font-size:24px;"><i class="fas fa-paper-plane"></i></button>
         </form>
     </div>
 
     <script>
-        let likes = 12400;
+        let isThermal = false;
+        let isBeautyOpen = false;
 
-        async function launchV67() {
+        async function launchV68() {
             try {
                 const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 document.getElementById('v').srcObject = s;
                 document.getElementById('gate').style.display = 'none';
                 document.getElementById('app').style.display = 'flex';
                 runEngines();
-            } catch (e) { alert("Cam Error."); }
+            } catch (e) { alert("System-Initialisierung fehlgeschlagen."); }
         }
 
         function runEngines() {
-            // Truth Bar
+            // Truth-O-Meter
             setInterval(() => {
-                document.getElementById('truth-fill').style.width = Math.floor(Math.random() * 30 + 70) + "%";
+                document.getElementById('truth-fill').style.width = Math.floor(Math.random() * 25 + 75) + "%";
             }, 3000);
 
-            // Chat
-            const users = ["Rico", "Sarah", "Guardian_X", "Tox", "Lia"];
-            const words = ["Krasses Interface!", "Ghost-Hand pls!", "🛡️ Ordnung hier!", "G-Power!", "💎💎💎"];
+            // Dynamic Chat
+            const users = ["Rico", "Sarah", "Guardian_X", "Tox", "Lia", "Nexus"];
+            const words = ["V68 ist Wahnsinn!", "Ghost-Hand bitte!", "🛡️ Spam gelöscht", "Spürst du das?", "💎💎💎", "Thermal Mode sieht krass aus!"];
             setInterval(() => {
                 const chat = document.getElementById('chat-zone');
-                const u = users[Math.floor(Math.random()*5)];
-                const isMod = u.includes("Guardian");
+                const u = users[Math.floor(Math.random()*6)];
+                const isMod = u.includes("Guardian") || u === "Nexus";
                 const m = document.createElement('div');
                 m.className = `msg ${isMod ? 'is-mod' : ''}`;
-                m.innerHTML = `<span><b>${isMod ? '🛡️ ' : ''}${u}:</b> ${words[Math.floor(Math.random()*5)]}</span><i class="fas fa-ban" style="color:red; font-size:12px; opacity:0.3;" onclick="this.parentElement.remove()"></i>`;
+                m.innerHTML = `<span><b>${isMod ? '🛡️ ' : ''}${u}:</b> ${words[Math.floor(Math.random()*6)]}</span><i class="fas fa-ban" style="color:red; font-size:11px; opacity:0.2;" onclick="this.parentElement.remove()"></i>`;
                 chat.appendChild(m);
-                if(chat.children.length > 6) chat.removeChild(chat.firstChild);
-            }, 2500);
+                if(chat.children.length > 7) chat.removeChild(chat.firstChild);
+            }, 2200);
         }
 
-        function toggleBeauty() {
-            const p = document.getElementById('beauty-ctrl');
-            p.style.display = p.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function applyBeauty(val) {
-            document.getElementById('b-val').innerText = val;
-            const blur = val / 40; 
-            document.getElementById('v').style.filter = `brightness(1.05) blur(${blur}px) contrast(1.05)`;
+        function toggleThermal() {
+            isThermal = !isThermal;
+            document.getElementById('v').classList.toggle('thermal');
+            document.getElementById('t-btn').classList.toggle('active');
+            if(navigator.vibrate) navigator.vibrate(40);
         }
 
         function toggleMedia() {
@@ -150,47 +150,60 @@
             pip.style.display = pip.style.display === 'block' ? 'none' : 'block';
         }
 
-        function sendMsg(e) {
+        function toggleBeauty() {
+            isBeautyOpen = !isBeautyOpen;
+            document.getElementById('beauty-panel').style.display = isBeautyOpen ? 'block' : 'none';
+        }
+
+        function applyBeauty(val) {
+            document.getElementById('b-val').innerText = val;
+            const blur = val / 35;
+            document.getElementById('v').style.filter = `brightness(1.05) blur(${blur}px) contrast(1.05) ${isThermal ? 'contrast(2) saturate(3) hue-rotate(90deg) invert(1)' : ''}`;
+        }
+
+        function triggerShake() {
+            const v = document.getElementById('v');
+            v.classList.add('shake');
+            if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            setTimeout(() => v.classList.remove('shake'), 1000);
+        }
+
+        function spawnGhostHand() {
+            const fx = document.getElementById('fx-layer');
+            const g = document.createElement('div');
+            g.innerHTML = '🖐️';
+            g.style.position = 'absolute'; g.style.left = "40%"; g.style.bottom = "0";
+            g.style.fontSize = "120px"; g.style.filter = "drop-shadow(0 0 30px white)";
+            g.style.animation = "ghostA 1.8s ease-out forwards";
+            fx.appendChild(g);
+            if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            setTimeout(() => g.remove(), 1800);
+        }
+
+        function sendMyMessage(e) {
             e.preventDefault();
             const i = document.getElementById('u-input');
             if(!i.value) return;
             const chat = document.getElementById('chat-zone');
             const m = document.createElement('div');
             m.className = "msg is-mod";
-            m.style.background = "rgba(255,255,255,0.1)";
+            m.style.background = "rgba(255,255,255,0.15)";
             m.innerHTML = `<span><b>🛡️ Du:</b> ${i.value}</span>`;
             chat.appendChild(m);
-            i.value = "";
-            i.blur();
+            i.value = ""; i.blur();
         }
 
         function spawnHeart(e) {
-            if(document.getElementById('app').style.display !== 'flex' || e.target.tagName === 'INPUT') return;
+            if(document.getElementById('app').style.display !== 'flex' || e.target.tagName === 'INPUT' || e.target.closest('.sidebar')) return;
+            const fx = document.getElementById('fx-layer');
             const h = document.createElement('div');
             h.innerHTML = '<i class="fas fa-heart"></i>';
-            h.style.position = 'absolute';
-            h.style.left = e.clientX + 'px';
-            h.style.top = e.clientY + 'px';
-            h.style.color = "#ff0050";
-            h.style.fontSize = "30px";
-            h.style.animation = "heartFly 1.2s ease-out forwards";
-            document.getElementById('fx-layer').appendChild(h);
-            if(navigator.vibrate) navigator.vibrate(20);
-            setTimeout(() => h.remove(), 1200);
-        }
-
-        function spawnGhost() {
-            const g = document.createElement('div');
-            g.innerHTML = '🖐️';
-            g.style.position = 'absolute';
-            g.style.left = "40%";
-            g.style.bottom = "0";
-            g.style.fontSize = "100px";
-            g.style.filter = "drop-shadow(0 0 20px white)";
-            g.style.animation = "ghostH 1.5s ease-out forwards";
-            document.getElementById('fx-layer').appendChild(g);
-            if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
-            setTimeout(() => g.remove(), 1500);
+            h.style.position = 'absolute'; h.style.left = e.clientX + 'px'; h.style.top = e.clientY + 'px';
+            h.style.color = "#ff0050"; h.style.fontSize = "35px";
+            h.style.animation = "heartUp 1.3s ease-out forwards";
+            fx.appendChild(h);
+            if(navigator.vibrate) navigator.vibrate(15);
+            setTimeout(() => h.remove(), 1300);
         }
     </script>
 </body>
