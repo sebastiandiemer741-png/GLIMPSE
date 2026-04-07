@@ -3,162 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE V86 | ULTIMATE</title>
+    <title>GLIMPSE V88 | PURE</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --tt-pink: #ff0050; --tt-cyan: #00f2ea; --gold: #ffd700; --mod: #007aff; --pk-blue: #007aff; --pk-red: #ff2d55; }
+        :root { --tt-pink: #ff0050; --tt-cyan: #00f2ea; --glass: rgba(0,0,0,0.4); }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         body, html { height: 100%; background: #000; font-family: -apple-system, sans-serif; color: white; overflow: hidden; position: fixed; width: 100%; }
 
-        /* --- VIDEO ENGINE --- */
-        #video-grid { position: fixed; inset: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; background: #111; z-index: 1; }
-        .v-slot { position: relative; background: #050505; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); }
-        .v-slot video, .v-slot img { width: 100%; height: 100%; object-fit: cover; opacity: 1; background: #000; }
-        #v { transform: scaleX(-1); }
-        .slot-name { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); padding: 2px 8px; border-radius: 5px; font-size: 10px; z-index: 10; border: 0.5px solid rgba(255,255,255,0.2); }
+        /* --- VIDEO GRID --- */
+        #grid { position: fixed; inset: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 1px; background: #000; z-index: 1; }
+        .slot { position: relative; background: #111; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .slot video, .slot img { width: 100%; height: 100%; object-fit: cover; }
+        #v-host { transform: scaleX(-1); }
+        .tag { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; backdrop-filter: blur(5px); z-index: 10; }
+        .wait-icon { opacity: 0.2; font-size: 30px; }
 
-        /* --- PK & HUD --- */
-        #pk-bar { position: absolute; top: 110px; left: 5%; width: 90%; height: 18px; background: #333; border-radius: 9px; display: none; z-index: 200; overflow: hidden; border: 1.5px solid white; }
-        #pk-b { height: 100%; width: 50%; background: var(--pk-blue); float: left; transition: 0.5s; }
-        #pk-r { height: 100%; width: 50%; background: var(--pk-red); float: left; transition: 0.5s; }
+        /* --- TOP BANNER (INVITE) --- */
+        #invite-banner { position: fixed; top: 60px; left: 12px; right: 12px; background: linear-gradient(90deg, #ff0050, #007aff); padding: 12px; border-radius: 12px; display: none; justify-content: space-between; align-items: center; z-index: 9000; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: spring 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
-        /* --- CHAT --- */
-        #chat { position: absolute; bottom: 135px; left: 15px; width: 80%; height: 200px; display: flex; flex-direction: column; justify-content: flex-end; pointer-events: none; z-index: 5000; }
-        .msg { background: rgba(0,0,0,0.6); padding: 8px 14px; margin-bottom: 6px; border-radius: 18px; font-size: 14px; width: fit-content; border-left: 4px solid var(--tt-cyan); backdrop-filter: blur(10px); animation: msgSlide 0.3s ease-out; }
+        /* --- CHAT AREA --- */
+        #chat { position: absolute; bottom: 120px; left: 12px; width: 75%; height: 200px; display: flex; flex-direction: column; justify-content: flex-end; pointer-events: none; z-index: 2000; }
+        .msg { background: rgba(0,0,0,0.25); padding: 6px 12px; margin-bottom: 4px; border-radius: 10px; font-size: 14px; width: fit-content; backdrop-filter: blur(5px); animation: slideIn 0.2s ease; }
 
-        /* --- INVITE BANNER --- */
-        #invite-banner { position: fixed; top: 60px; left: 5%; width: 90%; background: linear-gradient(90deg, var(--tt-pink), var(--mod)); padding: 12px; border-radius: 15px; z-index: 9000; display: none; justify-content: space-between; align-items: center; border: 1.5px solid white; animation: slideDown 0.5s forwards; }
+        /* --- BOTTOM DOCK --- */
+        #dock { position: fixed; bottom: 30px; width: 100%; padding: 0 12px; display: flex; gap: 10px; z-index: 5000; align-items: center; }
+        #input { flex: 1; background: rgba(255,255,255,0.15); border: none; padding: 12px 18px; border-radius: 25px; color: white; outline: none; font-size: 16px; backdrop-filter: blur(10px); }
+        .btn { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); color: white; border: none; }
 
-        /* --- INTERACTION DOCK --- */
-        #dock { position: fixed; bottom: 30px; width: 100%; padding: 0 15px; display: flex; gap: 12px; z-index: 5500; align-items: center; }
-        #u-in { flex: 1; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 15px 22px; border-radius: 35px; color: white; outline: none; font-size: 16px; }
-        .dock-btn { width: 52px; height: 52px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 22px; color: white; }
+        /* --- START --- */
+        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        button#go-live { background: white; color: black; border: none; padding: 18px 60px; border-radius: 35px; font-weight: 800; font-size: 18px; box-shadow: 0 0 30px rgba(255,255,255,0.2); }
 
-        /* --- GIFT PANEL --- */
-        #gift-panel { position: absolute; bottom: 0; left: 0; width: 100%; background: #0a0a0a; border-top: 3px solid var(--gold); border-top-left-radius: 30px; border-top-right-radius: 30px; z-index: 7000; padding: 25px; transform: translateY(100%); transition: 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); }
-        #gift-panel.open { transform: translateY(0); }
-        .gift-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
-        .g-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-
-        .sidebar { position: absolute; right: 15px; top: 150px; display: flex; flex-direction: column; gap: 15px; z-index: 4000; }
-        .s-btn { width: 50px; height: 50px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.3); backdrop-filter: blur(10px); }
-
-        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        @keyframes msgSlide { from { transform: translateX(-40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes slideDown { from { transform: translateY(-200%); } to { transform: translateY(0); } }
-        @keyframes heartFly { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-600px) scale(4); opacity: 0; } }
+        @keyframes spring { from { transform: translateY(-100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
-<body onclick="forcePlay(event)">
+<body>
 
-    <div id="video-grid">
-        <div class="v-slot"><video id="v" autoplay playsinline muted></video><div class="slot-name">Du (Host)</div></div>
-        <div class="v-slot" id="slot-2"><div class="slot-name">Warten...</div></div>
-        <div class="v-slot" id="slot-3"><div class="slot-name">Warten...</div></div>
-        <div class="v-slot" id="slot-4"><div class="slot-name">Warten...</div></div>
+    <div id="grid">
+        <div class="slot"><video id="v-host" autoplay playsinline muted></video><div class="tag">Du (Host)</div></div>
+        <div class="slot" id="s2"><i class="fas fa-user-plus wait-icon"></i><div class="tag">Warten...</div></div>
+        <div class="slot" id="s3"><i class="fas fa-user-plus wait-icon"></i><div class="tag">Warten...</div></div>
+        <div class="slot" id="s4"><i class="fas fa-user-plus wait-icon"></i><div class="tag">Warten...</div></div>
     </div>
-
-    <div id="pk-bar"><div id="pk-b"></div><div id="pk-r"></div></div>
-    <div id="chat"></div>
 
     <div id="invite-banner">
         <div style="display:flex; align-items:center; gap:10px;">
-            <img src="https://i.pravatar.cc/100?u=sarah" style="width:35px; border-radius:50%; border:1.5px solid white;">
-            <span style="font-weight:bold; font-size:14px;">Anfrage: Sarah_Live</span>
+            <img src="https://i.pravatar.cc/100?u=sarah" style="width:32px; border-radius:50%; border:1px solid white;">
+            <span style="font-weight:700; font-size:13px;">Anfrage: Sarah_Live</span>
         </div>
-        <button onclick="acceptSarah()" style="background:white; color:black; border:none; padding:8px 15px; border-radius:20px; font-weight:bold; font-size:12px;">ANNEHMEN</button>
+        <button onclick="accept()" style="background:white; color:black; border:none; padding:6px 14px; border-radius:20px; font-weight:700; font-size:12px;">ANNEHMEN</button>
     </div>
+
+    <div id="chat"></div>
 
     <div id="dock">
-        <input type="text" id="u-in" placeholder="Kommentieren..." autocomplete="off" onkeypress="if(event.key==='Enter') sendMsg()">
-        <button class="dock-btn" onclick="toggleGiftPanel()" style="background:var(--gold);"><i class="fas fa-gift"></i></button>
-        <button class="dock-btn" onclick="sendMsg()" style="background:var(--mod);"><i class="fas fa-paper-plane"></i></button>
-    </div>
-
-    <div id="gift-panel">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3 style="color:var(--gold)">GESCHENKE</h3>
-            <i class="fas fa-times-circle" onclick="toggleGiftPanel()" style="opacity:0.5;"></i>
-        </div>
-        <div class="gift-grid">
-            <div class="g-item" onclick="sendGift('Rose', '🌹', 1)"><div style="font-size:30px;">🌹</div><span>1</span></div>
-            <div class="g-item" onclick="sendGift('Herz', '🫰', 5)"><div style="font-size:30px;">🫰</div><span>5</span></div>
-            <div class="g-item" onclick="sendGift('Diamant', '💎', 25)"><div style="font-size:30px;">💎</div><span>25</span></div>
-            <div class="g-item" onclick="sendGift('Universum', '🪐', 60)"><div style="font-size:30px;">🪐</div><span>60</span></div>
-        </div>
+        <input type="text" id="input" placeholder="Kommentieren..." onkeypress="if(event.key==='Enter') send()">
+        <button class="btn" onclick="requestToJoin()" style="color:var(--tt-cyan)"><i class="fas fa-video-plus"></i></button>
+        <button class="btn" style="color:#face15"><i class="fas fa-gift"></i></button>
+        <button class="btn" onclick="send()" style="background:var(--tt-pink)"><i class="fas fa-paper-plane"></i></button>
     </div>
 
     <div id="gate">
-        <div style="width:80px; height:80px; background:var(--tt-pink); border-radius:20px; display:flex; align-items:center; justify-content:center; margin-bottom:25px; box-shadow: 0 0 30px var(--tt-pink);">
-            <i class="fas fa-video" style="font-size:40px; color:white;"></i>
-        </div>
-        <h1 style="letter-spacing:5px;">GLIMPSE V86</h1>
-        <button onclick="launchApp()" style="background:white; color:black; border:none; padding:20px 70px; border-radius:40px; font-weight:900; margin-top:35px;">START LIVE</button>
-    </div>
-
-    <div id="hud" style="display:none;">
-        <div class="sidebar">
-            <div class="s-btn" onclick="togglePK()"><i class="fas fa-bolt"></i></div>
-            <div class="s-btn" onclick="location.reload()"><i class="fas fa-sync"></i></div>
-        </div>
+        <i class="fab fa-tiktok" style="font-size:50px; margin-bottom:20px;"></i>
+        <button id="go-live" onclick="start()">GO LIVE</button>
     </div>
 
     <script>
-        let isPK = false, pkScore = 50;
-        const video = document.getElementById('v');
+        const v = document.getElementById('v-host');
 
-        async function launchApp() {
+        async function start() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                video.srcObject = stream;
+                const s = await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}});
+                v.srcObject = s;
                 document.getElementById('gate').style.display = 'none';
-                document.getElementById('hud').style.display = 'block';
-                addMsg("System", "Kommando-Zentrale aktiv. ✅");
-                // Simuliere Anfrage nach 8 Sek.
-                setTimeout(() => { document.getElementById('invite-banner').style.display = 'flex'; }, 8000);
-            } catch (e) { alert("Kamera-Fehler! Bitte Safari nutzen."); }
+                push("System", "Stream gestartet. ✅");
+                // Simuliert Zuschauer-Anfrage nach 5 Sekunden
+                setTimeout(() => { document.getElementById('invite-banner').style.display = 'flex'; }, 5000);
+            } catch(e) { alert("Kamera erlauben!"); }
         }
 
-        function forcePlay() { if(video.paused && video.srcObject) video.play(); spawnHeart(event); }
-
-        function sendMsg() {
-            const i = document.getElementById('u-in');
-            if(i.value.trim() !== "") { addMsg("🛡️ Du", i.value); i.value = ""; i.focus(); }
+        function send() {
+            const i = document.getElementById('input');
+            if(i.value.trim()) { push("Du", i.value); i.value = ""; }
         }
 
-        function addMsg(n, t) {
+        function push(u, t) {
             const c = document.getElementById('chat');
             const m = document.createElement('div');
-            m.className = 'msg'; m.innerHTML = `<b>${n}:</b> ${t}`;
-            c.appendChild(m); if(c.children.length > 5) c.removeChild(c.firstChild);
+            m.className = 'msg';
+            m.innerHTML = `<b style="color:rgba(255,255,255,0.7)">${u}:</b> ${t}`;
+            c.appendChild(m);
+            if(c.children.length > 6) c.removeChild(c.firstChild);
         }
 
-        function toggleGiftPanel() { document.getElementById('gift-panel').classList.toggle('open'); }
-
-        function sendGift(name, icon, pts) {
-            addMsg("GIFT", `Du hast ${icon} ${name} gesendet!`);
-            toggleGiftPanel();
-            if(isPK) { pkScore = Math.min(95, pkScore + pts); updatePK(); }
+        function requestToJoin() {
+            // Dies simuliert, was passiert wenn ein Zuschauer drückt
+            alert("Deine Anfrage wurde an den Host gesendet!");
             if(navigator.vibrate) navigator.vibrate(50);
         }
 
-        function acceptSarah() {
-            const s2 = document.getElementById('slot-2');
-            s2.innerHTML = `<img src="https://i.pravatar.cc/400?u=sarah"><div class="slot-name">Sarah_Live</div><div onclick="kick('slot-2')" style="position:absolute; top:8px; right:8px; background:red; padding:4px; border-radius:50%; font-size:10px;"><i class="fas fa-user-minus"></i></div>`;
+        function accept() {
+            const s2 = document.getElementById('s2');
+            s2.innerHTML = `<img src="https://i.pravatar.cc/400?u=sarah"><div class="tag">Sarah_Live</div>`;
             document.getElementById('invite-banner').style.display = 'none';
-        }
-
-        function kick(id) { document.getElementById(id).innerHTML = `<div class="slot-name">Warten...</div>`; }
-
-        function togglePK() { isPK = !isPK; document.getElementById('pk-bar').style.display = isPK ? 'block' : 'none'; }
-        function updatePK() { document.getElementById('pk-b').style.width = pkScore + "%"; document.getElementById('pk-r').style.width = (100 - pkScore) + "%"; }
-
-        function spawnHeart(e) {
-            if(e.target.tagName === 'INPUT' || e.target.closest('#dock') || e.target.closest('.sidebar')) return;
-            const h = document.createElement('div');
-            h.innerHTML = '❤️'; h.style.cssText = `position:absolute; left:${e.clientX}px; top:${e.clientY}px; color:#ff0050; font-size:35px; animation: heartFly 1.5s forwards; z-index:4500; pointer-events:none;`;
-            document.body.appendChild(h); setTimeout(() => h.remove(), 1500);
-            if(isPK) { pkScore = Math.min(95, pkScore + 0.5); updatePK(); }
+            push("System", "Sarah_Live ist dem Stream beigetreten!");
         }
     </script>
 </body>
