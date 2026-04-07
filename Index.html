@@ -3,134 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE V104 | AGORA CORE</title>
+    <title>GLIMPSE V106 | HYBRID CORE</title>
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --neon: #00ff88; --bg: #050505; --panel: rgba(15,15,15,0.9); --border: rgba(0,255,136,0.2); }
+        :root { --tt-pink: #ff0050; --tt-cyan: #00f2ea; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        body, html { height: 100%; background: var(--bg); font-family: 'Inter', sans-serif; color: white; overflow: hidden; position: fixed; width: 100%; }
+        body, html { height: 100%; background: #000; font-family: -apple-system, sans-serif; color: white; overflow: hidden; position: fixed; width: 100%; }
 
-        /* --- THE COURT (Grid) --- */
-        #court { position: fixed; inset: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 4px; padding: 6px; z-index: 1; }
-        .slot { position: relative; background: #000; border-radius: 18px; overflow: hidden; border: 1px solid var(--border); transition: 0.3s; }
-        #local-player { width: 100%; height: 100%; transform: scaleX(-1); }
-        .slot-meta { position: absolute; top: 12px; left: 12px; font-size: 9px; letter-spacing: 1px; color: var(--neon); background: rgba(0,0,0,0.6); padding: 3px 8px; border-radius: 5px; z-index: 10; }
+        /* EBENE 1: AGORA VIDEO VIEW (rtcEngine) */
+        #video-view { position: fixed; inset: 0; z-index: 1; background: #0a0a0a; }
+        #local-player { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 
-        /* --- NEURAL SCANNER (Exklusives Feature) --- */
-        #neural-overlay { position: absolute; inset: 0; border-top: 2px solid var(--neon); background: linear-gradient(0deg, transparent, rgba(0,255,136,0.05)); display: none; z-index: 5; pointer-events: none; }
+        /* EBENE 2: GRADIENT OVERLAY (BoxDecoration) */
+        #ui-gradient { 
+            position: fixed; inset: 0; 
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%, rgba(0,0,0,0.4) 100%); 
+            z-index: 2; pointer-events: none; 
+        }
 
-        /* --- INTERFACE --- */
-        #chat { position: absolute; bottom: 120px; left: 15px; width: 80%; height: 200px; display: flex; flex-direction: column; justify-content: flex-end; pointer-events: none; z-index: 5000; }
-        .msg { background: var(--panel); padding: 10px 16px; margin-bottom: 6px; border-radius: 12px; font-size: 13px; border-left: 2px solid var(--neon); backdrop-filter: blur(15px); animation: fadeIn 0.3s forwards; }
+        /* EBENE 3: CHAT LISTVIEW (Positioned bottom left) */
+        #chat-list { 
+            position: absolute; bottom: 100px; left: 15px; 
+            width: 260px; height: 200px; 
+            display: flex; flex-direction: column; justify-content: flex-end; 
+            pointer-events: none; z-index: 10; 
+        }
+        .chat-msg { 
+            font-size: 16px; margin-bottom: 6px; 
+            text-shadow: 0 1px 3px rgba(0,0,0,0.9); 
+            animation: fadeIn 0.3s ease-out; 
+        }
+        .user-tag { font-weight: bold; color: var(--tt-cyan); margin-right: 6px; }
 
-        #dock { position: fixed; bottom: 25px; width: 100%; padding: 0 15px; display: flex; gap: 10px; z-index: 6000; }
-        #input { flex: 1; background: var(--panel); border: 1px solid var(--border); padding: 16px 22px; border-radius: 16px; color: white; outline: none; font-size: 15px; backdrop-filter: blur(20px); }
-        .btn { width: 56px; height: 56px; border-radius: 16px; background: var(--panel); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 22px; color: white; transition: 0.2s; }
-        .btn-main { background: var(--neon); color: black; border: none; }
+        /* EBENE 4: INTERAKTIONS-BUTTONS (Sidebar right) */
+        #sidebar-right { 
+            position: absolute; right: 15px; bottom: 120px; 
+            display: flex; flex-direction: column; align-items: center; gap: 25px; 
+            z-index: 100; 
+        }
+        .action-node { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .action-node i { font-size: 35px; filter: drop-shadow(0 0 10px rgba(0,0,0,0.5)); }
+        .action-node span { font-size: 12px; font-weight: 500; }
 
-        /* --- SIDEBAR TOOLS --- */
-        #sidebar { position: absolute; right: 15px; top: 100px; display: flex; flex-direction: column; gap: 22px; z-index: 5500; }
-        .tool { text-align: center; color: white; opacity: 0.8; cursor: pointer; }
-        .tool span { display: block; font-size: 8px; color: var(--neon); margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        /* EBENE 5: TEXTFIELD INPUT (Positioned bottom) */
+        #input-container { 
+            position: fixed; bottom: 25px; left: 10px; right: 10px; 
+            display: flex; gap: 10px; z-index: 1000; 
+        }
+        #text-input { 
+            flex: 1; background: rgba(255,255,255,0.2); 
+            border: none; padding: 14px 22px; border-radius: 30px; 
+            color: white; font-size: 16px; outline: none; backdrop-filter: blur(15px); 
+        }
+        .btn-send { 
+            width: 50px; height: 50px; background: var(--tt-pink); 
+            border: none; border-radius: 50%; color: white; 
+            display: flex; align-items: center; justify-content: center; 
+        }
 
-        #gate { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        #gate h1 { font-size: 24px; letter-spacing: 12px; margin-bottom: 10px; color: var(--neon); }
-        #gate button { background: var(--neon); border: none; padding: 22px 80px; border-radius: 16px; font-weight: 900; font-size: 18px; box-shadow: 0 0 40px rgba(0,255,136,0.3); }
+        /* GATE / PERMISSION HANDLER UI */
+        #gate { 
+            position: fixed; inset: 0; background: #000; 
+            z-index: 10000; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; text-align: center; 
+        }
+        #gate h1 { letter-spacing: 5px; margin-bottom: 20px; }
+        #gate button { 
+            background: #fff; color: #000; border: none; 
+            padding: 20px 60px; border-radius: 40px; 
+            font-weight: 900; font-size: 18px; cursor: pointer; 
+        }
 
-        @keyframes scan { from { top: 0; } to { top: 100%; } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
-<body onclick="unlockAudio()">
+<body>
 
-    <div id="court">
-        <div class="slot">
-            <div id="local-player"></div>
-            <div id="neural-overlay"></div>
-            <div class="slot-meta">CORE_NODE_HOST</div>
-        </div>
-        <div class="slot" id="s2"><div class="slot-meta">REMOTE_02_EMPTY</div></div>
-        <div class="slot" id="s3"><div class="slot-meta">REMOTE_03_EMPTY</div></div>
-        <div class="slot" id="s4"><div class="slot-meta">REMOTE_04_EMPTY</div></div>
+    <div id="video-view">
+        <div id="local-player"></div>
     </div>
 
-    <div id="chat"></div>
+    <div id="ui-gradient"></div>
 
-    <div id="sidebar">
-        <div class="tool" onclick="runNeuralScan()"><i class="fas fa-microchip"></i><span>Neural</span></div>
-        <div class="tool" onclick="toggleMatch()"><i class="fas fa-p-circle"></i><span>Match</span></div>
-        <div class="tool" onclick="location.reload()"><i class="fas fa-sync-alt"></i><span>Reset</span></div>
+    <div id="chat-list"></div>
+
+    <div id="sidebar-right">
+        <div class="action-node"><i class="fas fa-heart" style="color:#ff2d55;"></i><span>1.2k</span></div>
+        <div class="action-node" onclick="gift()"><i class="fas fa-gift" style="color:#face15;"></i><span>Geschenk</span></div>
+        <div class="action-node"><i class="fas fa-share" style="color:white;"></i><span>Teilen</span></div>
+        <div class="action-node" onclick="location.reload()"><i class="fas fa-sync-alt" style="color:white; font-size:25px;"></i></div>
     </div>
 
-    <div id="dock">
-        <input type="text" id="input" placeholder="Neural Message..." onkeypress="if(event.key==='Enter') send()">
-        <div class="btn" onclick="openGift()"><i class="fas fa-cube"></i></div>
-        <div class="btn btn-main" onclick="send()"><i class="fas fa-paper-plane"></i></div>
+    <div id="input-container">
+        <input type="text" id="text-input" placeholder="Sag etwas..." onkeypress="if(event.key==='Enter') send()">
+        <button class="btn-send" onclick="send()"><i class="fas fa-paper-plane"></i></button>
     </div>
 
     <div id="gate">
-        <h1>GLIMPSE</h1>
-        <p style="font-size: 10px; opacity: 0.5; margin-bottom: 40px;">AGORA RTC ENGINE V4.20</p>
-        <button onclick="initializeAgora()">INITIALIZE CORE</button>
+        <i class="fab fa-tiktok" style="font-size:60px; margin-bottom:20px;"></i>
+        <h1>GLIMPSE V106</h1>
+        <p style="opacity:0.5; margin-bottom:30px;">RTC Engine & Permission Handler ready</p>
+        <button onclick="setupVideoStreaming()">INITIALIZE LIVE</button>
     </div>
 
     <script>
-        let client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
         let localTracks = { videoTrack: null, audioTrack: null };
+        let client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
-        // Permission Handler & Agora Initialization
-        async function initializeAgora() {
+        // ÜBERSETZUNG DEINES FLUTTER PERMISSION HANDLERS
+        async function setupVideoStreaming() {
             try {
-                // Hier greift der Permission Handler (Kamera & Mikro)
+                // Permission Request (Kamera & Mikro)
                 [localTracks.audioTrack, localTracks.videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
                 
+                // UI Update (setState Äquivalent)
                 document.getElementById('gate').style.display = 'none';
                 localTracks.videoTrack.play("local-player");
-                
-                post("SYSTEM", "AGORA RTC ENGINE: INITIALIZED");
-                post("SYSTEM", "STREAMS ARE ENCRYPTED.");
+
+                pushMsg("System", "RTC Engine verbunden. Broadcaster aktiv.");
             } catch (e) {
                 console.error(e);
-                alert("ZUGRIFF VERWEIGERT: Kamera und Mikrofon werden benötigt.");
+                alert("Bitte Kamera- und Mikrofonrechte in Safari erlauben!");
             }
         }
 
-        function unlockAudio() { AgoraRTC.onAudioAutoplayFailed = () => { console.log("Audio unlock required"); }; }
-
         function send() {
-            const i = document.getElementById('input');
-            if(i.value.trim()) { post("HOST", i.value); i.value = ""; }
+            const input = document.getElementById('text-input');
+            if(input.value.trim()) {
+                pushMsg("User", input.value);
+                input.value = "";
+            }
         }
 
-        function post(u, t) {
-            const c = document.getElementById('chat');
-            const m = document.createElement('div');
-            m.className = 'msg';
-            m.innerHTML = `<span style="color:var(--neon); font-weight:bold;">${u}:</span> ${t}`;
-            c.appendChild(m);
-            if(c.children.length > 5) c.removeChild(c.firstChild);
+        function pushMsg(user, text) {
+            const list = document.getElementById('chat-list');
+            const div = document.createElement('div');
+            div.className = 'chat-msg';
+            div.innerHTML = `<span class="user-tag">${user}:</span> ${text}`;
+            list.appendChild(div);
+            if(list.children.length > 7) list.removeChild(list.firstChild);
         }
 
-        function runNeuralScan() {
-            const scan = document.getElementById('neural-overlay');
-            scan.style.display = 'block';
-            scan.style.animation = "scan 2s infinite linear";
-            post("AI", "SCANNING BIOMETRICS...");
-            setTimeout(() => { 
-                scan.style.display = 'none'; 
-                post("AI", "STATUS: AUTHENTIC");
-                if(navigator.vibrate) navigator.vibrate([50,50,50]);
-            }, 4000);
-        }
-
-        function toggleMatch() {
-            post("MATCH", "SEARCHING FOR NODES...");
+        function gift() {
+            pushMsg("System", "Du hast ein Geschenk gesendet! 🎁");
             if(navigator.vibrate) navigator.vibrate(100);
-        }
-
-        function openGift() {
-            post("CORE", "GIFT PROTOCOL INITIALIZED.");
         }
     </script>
 </body>
