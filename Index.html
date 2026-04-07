@@ -3,40 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GLIMPSE V73 | CONNECT</title>
+    <title>GLIMPSE V75 | THE OMNIPOTENT</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --tt-pink: #ff0050; --tt-cyan: #00f2ea; --gold: #ffd700; --mod: #007aff; }
+        :root { --tt-pink: #ff0050; --tt-cyan: #00f2ea; --gold: #ffd700; --mod: #007aff; --truth: #00ff88; --pk-blue: #007aff; --pk-red: #ff2d55; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         body, html { height: 100%; background: #000; font-family: -apple-system, sans-serif; color: white; overflow: hidden; position: fixed; width: 100%; }
 
-        /* --- QUAD VIDEO GRID --- */
-        #video-grid { position: fixed; inset: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; background: #111; z-index: 1; }
+        /* --- VIDEO GRID --- */
+        #video-grid { position: fixed; inset: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; background: #111; z-index: 1; transition: 0.5s; }
         .v-slot { position: relative; background: #050505; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .v-slot video, .v-slot img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: 0.3s; }
-        .v-slot.empty { background: linear-gradient(45deg, #111, #222); }
-        .v-slot.empty::after { content: '\f234'; font-family: 'Font Awesome 6 Free'; font-weight: 900; opacity: 0.2; font-size: 30px; }
+        .v-slot video, .v-slot img { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; }
+        .v-slot.empty::after { content: '\f234'; font-family: 'Font Awesome 6 Free'; font-weight: 900; opacity: 0.1; font-size: 40px; }
+        .slot-name { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); padding: 2px 8px; border-radius: 5px; font-size: 10px; z-index: 10; border: 0.5px solid rgba(255,255,255,0.2); }
+        #v { transform: scaleX(-1); transition: 0.5s filter; }
+        .thermal { filter: contrast(2) saturate(3) hue-rotate(90deg) invert(1) !important; }
+
+        /* --- PK BATTLE BAR --- */
+        #pk-battle-bar { position: absolute; top: 110px; left: 5%; width: 90%; height: 18px; background: #333; border-radius: 9px; display: none; z-index: 200; overflow: hidden; border: 1.5px solid white; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
+        #pk-blue { height: 100%; width: 50%; background: var(--pk-blue); float: left; transition: 0.5s; }
+        #pk-red { height: 100%; width: 50%; background: var(--pk-red); float: left; transition: 0.5s; }
+
+        /* --- OVERLAYS & SENSORS --- */
+        #fx-layer { position: fixed; inset: 0; z-index: 150; pointer-events: none; }
+        #challenge { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); background: linear-gradient(90deg, var(--tt-pink), var(--mod)); padding: 5px 20px; border-radius: 20px; font-size: 10px; font-weight: 900; z-index: 200; box-shadow: 0 0 15px var(--tt-pink); white-space: nowrap; }
         
-        .slot-name { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); padding: 2px 8px; border-radius: 4px; font-size: 10px; z-index: 10; border: 0.5px solid rgba(255,255,255,0.2); }
+        .truth-box { position: absolute; top: 115px; left: 15px; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 10px; width: fit-content; border: 1px solid var(--truth); z-index: 200; }
+        #t-fill { height: 4px; width: 85%; background: var(--truth); margin-top: 4px; transition: 1s; box-shadow: 0 0 10px var(--truth); }
+
+        #lucky-box { position: absolute; top: 160px; left: 15px; background: rgba(0,0,0,0.8); border: 1.5px solid var(--gold); border-radius: 12px; padding: 8px; display: none; z-index: 250; align-items: center; gap: 10px; animation: slideIn 0.5s ease; }
 
         /* --- GUEST PANEL --- */
-        #guest-panel { position: absolute; bottom: 0; left: 0; width: 100%; background: #111; border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 1000; padding: 20px; transform: translateY(100%); transition: 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); border-top: 2px solid var(--mod); }
+        #guest-panel { position: absolute; bottom: 0; left: 0; width: 100%; background: #0d0d0d; border-top-left-radius: 25px; border-top-right-radius: 25px; z-index: 1000; padding: 25px; transform: translateY(100%); transition: 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); border-top: 2px solid var(--mod); }
         #guest-panel.open { transform: translateY(0); }
-        .guest-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 10px; }
+        .guest-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 15px; margin-bottom: 12px; }
 
-        /* --- REQUEST BUTTON --- */
-        #req-btn { position: absolute; bottom: 100px; left: 15px; width: 45px; height: 45px; background: var(--mod); border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 200; box-shadow: 0 0 15px var(--mod); border: 2px solid white; }
-        #req-badge { position: absolute; top: -5px; right: -5px; background: var(--tt-pink); color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-
-        /* --- HUD --- */
+        /* --- HUD & BUTTONS --- */
         .hud { position: relative; z-index: 100; height: 100%; display: none; flex-direction: column; padding: 50px 15px 20px; }
-        .sidebar { position: absolute; right: 10px; top: 120px; display: flex; flex-direction: column; gap: 12px; z-index: 210; }
+        .sidebar { position: absolute; right: 12px; top: 140px; display: flex; flex-direction: column; gap: 12px; z-index: 210; }
         .s-btn { width: 48px; height: 48px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); }
+        .s-btn.active { border-color: var(--tt-cyan); color: var(--tt-cyan); }
+        
+        #req-btn { position: absolute; bottom: 100px; left: 15px; width: 50px; height: 50px; background: var(--mod); border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 200; border: 2px solid white; box-shadow: 0 0 20px var(--mod); }
+        #req-badge { position: absolute; top: -5px; right: -5px; background: var(--tt-pink); width: 22px; height: 22px; border-radius: 50%; font-size: 11px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; }
 
-        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        /* --- ANIMATIONS --- */
+        @keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+        @keyframes heartFly { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-500px) scale(3); opacity: 0; } }
+        @keyframes ghostMove { 0% { transform: translateY(500px) scale(0.5); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(-200px) scale(2.5); opacity: 0; } }
+
+        #gate { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
     </style>
 </head>
-<body>
+<body onclick="spawnHeart(event)">
 
     <div id="video-grid">
         <div class="v-slot"><video id="v" autoplay playsinline muted></video><div class="slot-name">Du (Host)</div></div>
@@ -45,87 +64,114 @@
         <div class="v-slot empty" id="slot-4"><div class="slot-name">Warten...</div></div>
     </div>
 
+    <div id="fx-layer"></div>
+
+    <div id="challenge">CHALLENGE: 20k LIKES FÜR GHOST-MODE 🖐️</div>
+    <div id="pk-battle-bar"><div id="pk-blue"></div><div id="pk-red"></div></div>
+    
+    <div class="truth-box">
+        <div style="font-size:7px; font-weight:bold; color:var(--truth);">AUTHENTIZITÄT</div>
+        <div id="t-fill"></div>
+    </div>
+
+    <div id="lucky-box">
+        <i class="fas fa-gem" style="color:var(--gold); font-size:24px;"></i>
+        <div>
+            <div style="font-size:8px; font-weight:bold;">LUCKY BOX</div>
+            <div id="box-timer" style="font-size:14px; color:var(--gold); font-weight:900;">00:30</div>
+        </div>
+    </div>
+
     <div id="req-btn" onclick="toggleGuestPanel()">
         <i class="fas fa-user-plus"></i>
         <div id="req-badge">3</div>
     </div>
 
     <div id="guest-panel">
-        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-            <h3 style="letter-spacing:1px;">GÄSTE-ANFRAGEN</h3>
-            <i class="fas fa-times" onclick="toggleGuestPanel()"></i>
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items:center;">
+            <h2 style="letter-spacing:2px; font-size:18px;">GÄSTE-ANFRAGEN</h2>
+            <i class="fas fa-times-circle" style="font-size:24px; opacity:0.5;" onclick="toggleGuestPanel()"></i>
         </div>
-        <div id="guest-list">
-            <div class="guest-row">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <img src="https://i.pravatar.cc/100?u=sarah" style="width:40px; border-radius:50%;">
-                    <div><b>Sarah_Live</b><br><small style="color:var(--gold)">14k Follower</small></div>
-                </div>
-                <button onclick="acceptGuest('slot-2', 'Sarah_Live', 'sarah')" style="background:var(--mod); color:white; border:none; padding:8px 15px; border-radius:8px; font-weight:bold;">AKZEPTIEREN</button>
+        <div class="guest-row">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <img src="https://i.pravatar.cc/100?u=sarah" style="width:45px; border-radius:50%; border:2px solid var(--tt-cyan);">
+                <div><b>Sarah_Live</b><br><small style="color:var(--gold)">Pro Creator</small></div>
             </div>
-            <div class="guest-row">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <img src="https://i.pravatar.cc/100?u=rico" style="width:40px; border-radius:50%;">
-                    <div><b>Rico_Vibe</b><br><small style="color:var(--tt-cyan)">Neu</small></div>
-                </div>
-                <button onclick="acceptGuest('slot-3', 'Rico_Vibe', 'rico')" style="background:var(--mod); color:white; border:none; padding:8px 15px; border-radius:8px; font-weight:bold;">AKZEPTIEREN</button>
-            </div>
+            <button onclick="acceptGuest('slot-2', 'Sarah_Live', 'sarah')" style="background:var(--mod); color:white; border:none; padding:10px 20px; border-radius:10px; font-weight:bold;">ANNEHMEN</button>
         </div>
-        <button onclick="copyInvite()" style="width:100%; background:rgba(255,255,255,0.1); border:1px dashed white; color:white; padding:15px; border-radius:12px; margin-top:10px;">
-            <i class="fas fa-link"></i> EINLADUNGSLINK KOPIEREN
-        </button>
+        <div class="guest-row">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <img src="https://i.pravatar.cc/100?u=rico" style="width:45px; border-radius:50%; border:2px solid var(--tt-pink);">
+                <div><b>Rico_Vibe</b><br><small style="color:var(--tt-cyan)">Neu</small></div>
+            </div>
+            <button onclick="acceptGuest('slot-3', 'Rico_Vibe', 'rico')" style="background:var(--mod); color:white; border:none; padding:10px 20px; border-radius:10px; font-weight:bold;">ANNEHMEN</button>
+        </div>
     </div>
 
     <div id="gate">
-        <h1 style="letter-spacing:10px; font-weight:900;">V73 CONNECT</h1>
-        <button onclick="launchV73()" style="background:white; color:black; border:none; padding:20px 70px; border-radius:40px; font-weight:900; margin-top:30px;">GO LIVE</button>
+        <div style="width:90px; height:90px; background:linear-gradient(45deg, var(--tt-pink), var(--mod)); border-radius:25px; display:flex; align-items:center; justify-content:center; margin-bottom:25px; box-shadow: 0 0 40px var(--mod);">
+            <i class="fas fa-crown" style="font-size:45px; color:white;"></i>
+        </div>
+        <h1 style="letter-spacing:10px; font-weight:900;">OMNIPOTENT V75</h1>
+        <button onclick="launchV75()" style="background:white; color:black; border:none; padding:22px 80px; border-radius:50px; font-weight:900; margin-top:35px; box-shadow: 0 10px 20px rgba(0,0,0,0.4);">LAUNCH ALL SYSTEMS</button>
     </div>
 
     <div id="app" class="hud">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div style="background:rgba(0,0,0,0.5); padding:6px 15px; border-radius:20px; font-size:12px; border:1px solid var(--tt-cyan);">
-                <b>MULTIPLEX_ON</b> <i class="fas fa-network-wired"></i>
-            </div>
-            <div onclick="location.reload()" style="font-size:24px;"><i class="fas fa-power-off"></i></div>
-        </div>
-
         <div class="sidebar">
+            <div class="s-btn" onclick="startLuckyBox()"><i class="fas fa-box" style="color:var(--gold)"></i></div>
             <div class="s-btn" onclick="spawnGhost()"><i class="fas fa-hand-sparkles"></i></div>
-            <div class="s-btn" onclick="alert('PK Suche...')"><i class="fas fa-bolt"></i></div>
-            <div class="s-btn" onclick="alert('Alle Gäste stummgeschaltet')"><i class="fas fa-microphone-slash"></i></div>
-            <div class="s-btn" onclick="alert('Studio-Filter')"><i class="fas fa-wand-sparkles"></i></div>
+            <div class="s-btn" onclick="togglePK()" id="pk-btn"><i class="fas fa-bolt"></i></div>
+            <div class="s-btn" onclick="toggleThermal()" id="th-btn"><i class="fas fa-eye"></i></div>
+            <div class="s-btn" onclick="location.reload()"><i class="fas fa-power-off"></i></div>
         </div>
 
-        <div id="chat" style="position:absolute; bottom:100px; right:15px; width:60%; height:150px; overflow:hidden; pointer-events:none; display:flex; flex-direction:column; justify-content:flex-end; text-align:right;"></div>
+        <div id="chat" style="position:absolute; bottom:110px; left:15px; width:70%; height:180px; display:flex; flex-direction:column; justify-content:flex-end; pointer-events:none;"></div>
+
+        <div style="position:fixed; bottom:25px; width:94%; left:3%; display:flex; gap:10px; z-index:300;">
+            <input type="text" id="u-in" placeholder="Nachricht ans Panel..." style="flex:1; background:rgba(255,255,255,0.15); border:none; padding:15px 20px; border-radius:30px; color:white; outline:none;" onkeypress="if(event.key==='Enter') sendMyMsg()">
+        </div>
     </div>
 
     <script>
-        async function launchV73() {
+        let isPK = false, isThermal = false, pkScore = 50;
+
+        async function launchV75() {
             try {
                 const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 document.getElementById('v').srcObject = s;
                 document.getElementById('gate').style.display = 'none';
                 document.getElementById('app').style.display = 'flex';
-                simulateRequests();
+                runEngines();
             } catch (e) { alert("Zugriff verweigert."); }
+        }
+
+        function runEngines() {
+            // Truth Bar
+            setInterval(() => { document.getElementById('t-fill').style.width = Math.floor(Math.random() * 25 + 75) + "%"; }, 3000);
+            
+            // Auto Chat
+            const names = ["Sarah", "Rico", "Max", "Lia", "Nexus"];
+            setInterval(() => {
+                const chat = document.getElementById('chat'), m = document.createElement('div');
+                m.style.cssText = "background:rgba(0,0,0,0.4); padding:7px 12px; margin-bottom:5px; border-radius:15px; font-size:12px; width:fit-content; border-left:3px solid var(--tt-cyan); animation: slideIn 0.3s ease;";
+                m.innerHTML = `<b>${names[Math.floor(Math.random()*5)]}:</b> G-Power! 🔥💎`;
+                chat.appendChild(m);
+                if(chat.children.length > 5) chat.removeChild(chat.firstChild);
+                if(isPK && Math.random() > 0.7) { pkScore = Math.max(pkScore - 4, 10); updatePK(); }
+            }, 3000);
         }
 
         function toggleGuestPanel() {
             document.getElementById('guest-panel').classList.toggle('open');
-            if(navigator.vibrate) navigator.vibrate(20);
+            if(navigator.vibrate) navigator.vibrate(25);
         }
 
         function acceptGuest(slotId, name, avatar) {
             const slot = document.getElementById(slotId);
             slot.classList.remove('empty');
-            slot.innerHTML = `<img src="https://i.pravatar.cc/400?u=${avatar}" style="opacity:1"><div class="slot-name">${name}</div><div style="position:absolute; top:5px; right:5px; color:white; background:red; padding:4px; border-radius:50%; font-size:10px;" onclick="kickGuest('${slotId}')"><i class="fas fa-user-minus"></i></div>`;
-            
+            slot.innerHTML = `<img src="https://i.pravatar.cc/400?u=${avatar}"><div class="slot-name">${name}</div><div style="position:absolute; top:8px; right:8px; background:var(--tt-pink); padding:5px; border-radius:50%; font-size:10px; z-index:15;" onclick="kickGuest('${slotId}')"><i class="fas fa-user-minus"></i></div>`;
             toggleGuestPanel();
-            if(navigator.vibrate) navigator.vibrate([30, 50, 30]);
-            
-            // Badge reduzieren
-            const b = document.getElementById('req-badge');
-            b.innerText = Math.max(0, parseInt(b.innerText) - 1);
+            if(navigator.vibrate) navigator.vibrate([40, 60, 40]);
         }
 
         function kickGuest(slotId) {
@@ -135,29 +181,66 @@
             if(navigator.vibrate) navigator.vibrate(100);
         }
 
-        function copyInvite() {
-            alert("Einladungslink in Zwischenablage kopiert! Schicke ihn deinen Gästen.");
+        function togglePK() {
+            isPK = !isPK;
+            document.getElementById('pk-battle-bar').style.display = isPK ? 'block' : 'none';
+            document.getElementById('pk-btn').style.background = isPK ? 'var(--pk-red)' : 'rgba(0,0,0,0.6)';
+            if(navigator.vibrate) navigator.vibrate(100);
         }
 
-        function simulateRequests() {
-            setInterval(() => {
-                const chat = document.getElementById('chat');
-                const m = document.createElement('div');
-                m.style.cssText = "background:rgba(0,0,0,0.4); padding:6px 12px; margin-bottom:5px; border-radius:15px; font-size:11px; width:fit-content; align-self:flex-end;";
-                m.innerHTML = `<b>User_${Math.floor(Math.random()*99)}:</b> Will als Gast rein! 🙏`;
-                chat.appendChild(m);
-                if(chat.children.length > 5) chat.removeChild(chat.firstChild);
-            }, 5000);
+        function updatePK() {
+            document.getElementById('pk-blue').style.width = pkScore + "%";
+            document.getElementById('pk-red').style.width = (100 - pkScore) + "%";
+        }
+
+        function toggleThermal() {
+            isThermal = !isThermal;
+            document.getElementById('v').classList.toggle('thermal');
+            document.getElementById('th-btn').classList.toggle('active');
+        }
+
+        function startLuckyBox() {
+            const box = document.getElementById('lucky-box');
+            box.style.display = 'flex';
+            let t = 30;
+            const timer = setInterval(() => {
+                t--;
+                document.getElementById('box-timer').innerText = `00:${t < 10 ? '0'+t : t}`;
+                if(t <= 0) { clearInterval(timer); box.style.display = 'none'; alert("BOX OPEN! 💎"); if(isPK) pkScore = Math.min(pkScore + 15, 95); updatePK(); }
+            }, 1000);
         }
 
         function spawnGhost() {
             const g = document.createElement('div');
             g.innerHTML = '🖐️';
-            g.style.cssText = "position:absolute; left:40%; bottom:0; font-size:100px; filter:drop-shadow(0 0 20px white); animation: ghostMove 1.5s forwards; z-index:150;";
-            document.body.appendChild(g);
-            setTimeout(() => g.remove(), 1500);
+            g.style.cssText = "position:absolute; left:40%; bottom:0; font-size:110px; filter:drop-shadow(0 0 25px white); animation: ghostMove 1.6s forwards; z-index:150;";
+            document.getElementById('fx-layer').appendChild(g);
+            setTimeout(() => g.remove(), 1600);
+        }
+
+        function spawnHeart(e) {
+            if(e.target.tagName === 'INPUT' || e.target.closest('#guest-panel') || e.target.closest('.sidebar')) return;
+            const h = document.createElement('div');
+            h.innerHTML = '<i class="fas fa-heart"></i>';
+            h.style.cssText = `position:absolute; left:${e.clientX}px; top:${e.clientY}px; color:#ff0050; font-size:32px; animation: heartFly 1.2s forwards; z-index:500;`;
+            document.getElementById('fx-layer').appendChild(h);
+            setTimeout(() => h.remove(), 1200);
+            if(navigator.vibrate) navigator.vibrate(15);
+            if(isPK) { pkScore = Math.min(pkScore + 0.5, 95); updatePK(); }
+        }
+
+        function sendMyMsg() {
+            const i = document.getElementById('u-in');
+            if(!i.value) return;
+            const chat = document.getElementById('chat'), m = document.createElement('div');
+            m.style.cssText = "background:rgba(0,122,255,0.2); padding:7px 12px; margin-bottom:5px; border-radius:15px; font-size:12px; width:fit-content; border-left:3px solid var(--mod); align-self:flex-start;";
+            m.innerHTML = `<b>Host:</b> ${i.value}`;
+            chat.appendChild(m); i.value = "";
         }
     </script>
-    <style> @keyframes ghostMove { 0% { transform: translateY(500px) scale(0.5); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(-200px) scale(2); opacity: 0; } } </style>
+    <style> 
+        @keyframes ghostMove { 0% { transform: translateY(500px) scale(0.5); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(-200px) scale(2.5); opacity: 0; } } 
+        @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
 </body>
 </html>
